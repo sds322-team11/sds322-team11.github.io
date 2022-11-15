@@ -1,0 +1,9 @@
+name: "My Name"
+navbar:
+  title: "Housing Price Prediction"
+  left:
+    - text: "Project Info"
+      href: index.html
+    - text: "Analysis"
+      href: analysis.html
+      

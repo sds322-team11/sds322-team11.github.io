@@ -1,12 +1,36 @@
 ---
-title: "Team 11 SDS322 Final Project"
-author: "Team 11"
-date: "2022-11-14"
-output: html_document
+title: 'Team 11 SDS322E Final Project'
+pagetitle: 'Team 11 SDS322E Final Project'
+output: 
+  html_document: 
+    css: "styles.css"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{R echo=F, eval=F}
+#to build this website into the _site directory, run
+rmarkdown::site_generator()
 ```
+ 
+## Project:
+Identifying trends between home attributes and the sales price of the homes to approximate what variables have the most impact on the sales price and which can be used to predict sales price. Our goal is to create a model that can take attributes of homes as inputs and accurately predict what the sales price will be. 
 
-## Placeholder for website
+## Goals: 
+Find which factors appear to most greatly affect the sales price of a home. Once these factors are found, explore the predictive power the factors have on sales price and whether they can be used to accurately predict the sales price of a home (SalePrice).
+
+## Link to data: 
+A link to our data can be found
+<a href="https://www.kaggle.com/datasets/rsizem2/house-prices-ames-cleaned-dataset?select=new_train.csv" target="_blank"> Here</a>
+
+
+Descriptions of the columns can be found at <a href="https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data" target="_blank"> Here</a> 
+
+## Information about data:
+We used an open-source dataset found on Kaggle that has already been cleaned. The dataset contains 80 predictive variables related to attributes of a house. This dataset also has 1456 observations. This dataset is the processed version of the Ames Housing dataset that was used in data science education.
+
+## References:
+The Ames Housing dataset was compiled by Dean De Cock for use in data science education.
+link: http://www.amstat.org/publications/jse/v19n3/decock.pdf 
+
+##### You can find our analysis [here](/analysis)!
+
+---

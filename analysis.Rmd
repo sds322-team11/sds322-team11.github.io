@@ -1,0 +1,74 @@
+---
+title: "Analysis"
+pagetitle: 'Analysis'
+output: 
+  html_document: 
+    css: "styles.css"
+---
+
+```{r, include=FALSE}
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+
+```
+## Summary
+
+We want to analyze the housing sales prices to analyze which variables influence the sales price the most. We also want to train a model that predicts the sales price of a house given the variables necessary.
+
+In order to complete the analysis step, we will create correlation matrices, visualize individual variables, and look at regression outputs to see what variables contribute the most to predicting sales price.
+
+In order to complete the model training step, we will follow the following steps from class:
+1. Choose a model
+2. cost
+3. a
+4. a
+
+
+## Importing Libraries + Loading Data
+
+```{R, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(readr)
+data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
+head(data)
+
+```
+
+# Visualization
+
+### Histogram of SalePrice (dependent variable):
+
+```{R}
+
+
+data %>% 
+  ggplot(aes(x=SalePrice)) +
+  geom_histogram(color = "#000000", fill = "#0099F8") + 
+  labs(
+    title = "Histogram of SalesPrice in Housing Data",
+    caption = "Source: Gapminder dataset",
+    x = "Sales Price in $USD",
+    y = "Count"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(color = "#0099F8", size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 10, face = "bold"),
+    plot.caption = element_text(face = "italic")
+  )
+head(data)
+```
+
+As you can see, the sales price is slightly right skewed
+
+```{R}
+#install.packages("corrplot")
+library(corrplot)
+numeric_only <- select_if(data, is.numeric)
+# res <- cor(numeric_only)
+# corrplot(res, type = "upper", order = "hclust",
+#          tl.col = "black", tl.srt = 45)
+```
+
+# Choosing a Model
+
