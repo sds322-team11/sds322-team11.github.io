@@ -33,4 +33,11 @@ link: http://www.amstat.org/publications/jse/v19n3/decock.pdf
 
 ##### You can find our analysis [here](/analysis)!
 
+
+
+## Other sources
+
+- https://stackoverflow.com/questions/48430882/how-to-select-non-numeric-columns-using-dplyrselect-if
+
+- 
 ---

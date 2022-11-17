@@ -11,7 +11,7 @@
 
 
 
-<title>Analysis</title>
+<title>Analysis &amp; Hypotheses</title>
 
 <script src="site_libs/header-attrs-2.17/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -249,7 +249,7 @@ $(document).ready(function () {
   <a href="index.html">Project Info</a>
 </li>
 <li>
-  <a href="analysis.html">Analysis</a>
+  <a href="analysis.html">Analysis &amp; Hypotheses</a>
 </li>
 <li>
   <a href="modeling.html">Modeling</a>
@@ -266,7 +266,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Analysis</h1>
+<h1 class="title toc-ignore">Analysis &amp; Hypotheses</h1>
 
 </div>
 
@@ -290,6 +290,9 @@ following steps from class: 1. Choose a model 2. cost 3. a 4. a</p>
 library(tidyr)
 library(ggplot2)
 library(readr)
+library(tidyverse)
+#install.packages(&quot;corrplot&quot;)
+library(corrplot)
 data &lt;- read_csv(&quot;~/SDS322E/final_project_homepage/clean_train.csv&quot;)
 head(data)</code></pre>
 <pre><code>## # A tibble: 6 × 81
@@ -349,16 +352,54 @@ class="section level3">
 ## #   ExterCond &lt;dbl&gt;, Foundation &lt;chr&gt;, BsmtQual &lt;dbl&gt;, BsmtCond &lt;dbl&gt;,
 ## #   BsmtExposure &lt;dbl&gt;, BsmtFinType1 &lt;dbl&gt;, BsmtFinSF1 &lt;dbl&gt;, …</code></pre>
 <p>As you can see, the sales price is slightly right skewed</p>
-<pre class="r"><code>#install.packages(&quot;corrplot&quot;)
-library(corrplot)</code></pre>
-<pre><code>## corrplot 0.92 loaded</code></pre>
 <pre class="r"><code># Get only the numeric data
 numeric_only &lt;- data %&gt;% select_if(is.numeric)
 
 res &lt;- cor(numeric_only)
 
 corrplot(res, tl.cex = .5)</code></pre>
-<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+Let’s also get a correlation plot for each of the categorical
+variables</p>
+<pre class="r"><code># Get only the categorical data
+categorical &lt;- data %&gt;% select_if(negate(is.numeric))
+
+categorical %&gt;% glimpse()</code></pre>
+<pre><code>## Rows: 1,456
+## Columns: 23
+## $ MSSubClass    &lt;chr&gt; &quot;2-STORY 1946+&quot;, &quot;1-STORY 1946+&quot;, &quot;2-STORY 1946+&quot;, &quot;2-ST…
+## $ MSZoning      &lt;chr&gt; &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RL&quot;, &quot;RM&quot;, &quot;R…
+## $ Street        &lt;chr&gt; &quot;Pave&quot;, &quot;Pave&quot;, &quot;Pave&quot;, &quot;Pave&quot;, &quot;Pave&quot;, &quot;Pave&quot;, &quot;Pave&quot;, …
+## $ Alley         &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ LandContour   &lt;chr&gt; &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, &quot;Lvl&quot;, …
+## $ LotConfig     &lt;chr&gt; &quot;Inside&quot;, &quot;FR2&quot;, &quot;Inside&quot;, &quot;Corner&quot;, &quot;FR2&quot;, &quot;Inside&quot;, &quot;I…
+## $ Neighborhood  &lt;chr&gt; &quot;CollgCr&quot;, &quot;Veenker&quot;, &quot;CollgCr&quot;, &quot;Crawfor&quot;, &quot;NoRidge&quot;, &quot;…
+## $ Condition1    &lt;chr&gt; &quot;Norm&quot;, &quot;Feedr&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;,…
+## $ Condition2    &lt;chr&gt; &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, &quot;Norm&quot;, …
+## $ BldgType      &lt;chr&gt; &quot;1Fam&quot;, &quot;1Fam&quot;, &quot;1Fam&quot;, &quot;1Fam&quot;, &quot;1Fam&quot;, &quot;1Fam&quot;, &quot;1Fam&quot;, …
+## $ HouseStyle    &lt;chr&gt; &quot;2Story&quot;, &quot;1Story&quot;, &quot;2Story&quot;, &quot;2Story&quot;, &quot;2Story&quot;, &quot;1.5Fi…
+## $ RoofStyle     &lt;chr&gt; &quot;Gable&quot;, &quot;Gable&quot;, &quot;Gable&quot;, &quot;Gable&quot;, &quot;Gable&quot;, &quot;Gable&quot;, &quot;G…
+## $ RoofMatl      &lt;chr&gt; &quot;CompShg&quot;, &quot;CompShg&quot;, &quot;CompShg&quot;, &quot;CompShg&quot;, &quot;CompShg&quot;, &quot;…
+## $ Exterior1st   &lt;chr&gt; &quot;VinylSd&quot;, &quot;MetalSd&quot;, &quot;VinylSd&quot;, &quot;Wd Sdng&quot;, &quot;VinylSd&quot;, &quot;…
+## $ Exterior2nd   &lt;chr&gt; &quot;VinylSd&quot;, &quot;MetalSd&quot;, &quot;VinylSd&quot;, &quot;WdShing&quot;, &quot;VinylSd&quot;, &quot;…
+## $ MasVnrType    &lt;chr&gt; &quot;BrkFace&quot;, &quot;None&quot;, &quot;BrkFace&quot;, &quot;None&quot;, &quot;BrkFace&quot;, &quot;None&quot;,…
+## $ Foundation    &lt;chr&gt; &quot;PConc&quot;, &quot;CBlock&quot;, &quot;PConc&quot;, &quot;BrkTil&quot;, &quot;PConc&quot;, &quot;Wood&quot;, &quot;…
+## $ Heating       &lt;chr&gt; &quot;GasA&quot;, &quot;GasA&quot;, &quot;GasA&quot;, &quot;GasA&quot;, &quot;GasA&quot;, &quot;GasA&quot;, &quot;GasA&quot;, …
+## $ GarageType    &lt;chr&gt; &quot;Attchd&quot;, &quot;Attchd&quot;, &quot;Attchd&quot;, &quot;Detchd&quot;, &quot;Attchd&quot;, &quot;Attch…
+## $ MiscFeature   &lt;chr&gt; NA, NA, NA, NA, NA, &quot;Shed&quot;, NA, &quot;Shed&quot;, NA, NA, NA, NA, …
+## $ MoSold        &lt;chr&gt; &quot;Feb&quot;, &quot;May&quot;, &quot;Sept&quot;, &quot;Feb&quot;, &quot;Dec&quot;, &quot;Oct&quot;, &quot;Aug&quot;, &quot;Nov&quot;,…
+## $ SaleType      &lt;chr&gt; &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;W…
+## $ SaleCondition &lt;chr&gt; &quot;Normal&quot;, &quot;Normal&quot;, &quot;Normal&quot;, &quot;Abnorml&quot;, &quot;Normal&quot;, &quot;Norm…</code></pre>
+</div>
+<div id="hypotheses" class="section level2">
+<h2>Hypotheses</h2>
+<p>Now we have visualized our data, we can make some hypotheses</p>
+<ol style="list-style-type: decimal">
+<li><p>Hypothesis 1</p></li>
+<li><p>Hypothesis 2</p></li>
+<li><p>Hypothesis 3</p></li>
+<li><p>Hypothesis 4</p></li>
+</ol>
 </div>
 </div>
 

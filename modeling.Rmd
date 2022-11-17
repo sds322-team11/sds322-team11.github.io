@@ -6,6 +6,11 @@ output:
     css: "styles.css"
 ---
 
+```{r setup, include=FALSE, echo=TRUE}
+library(reticulate)
+use_python(Sys.which("python3")) # Use python3
+```
+
 ```{r, include=FALSE}
 htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 
@@ -13,9 +18,22 @@ htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 ## Modeling Summary
 
 In order to complete the model training step, we will follow the following steps from class:
-1. Choose a model
-2. cost
-3. a
-4. a
 
+1. Define your Model Class
 
+2. Define the Cost Function
+
+3. Perform Optimization
+
+4. Check the Performance of Fitted Model
+
+```{R}
+
+```
+## Defining Our Model class
+
+We know that our output will be a number so we will use some type of regression model. Let's try out a few regression models
+
+```{python}
+
+```

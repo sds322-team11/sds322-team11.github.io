@@ -1,6 +1,6 @@
 ---
-title: "Analysis"
-pagetitle: 'Analysis'
+title: "Analysis & Hypotheses"
+pagetitle: 'Analysis & Hypotheses'
 output: 
   html_document: 
     css: "styles.css"
@@ -30,6 +30,9 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(readr)
+library(tidyverse)
+#install.packages("corrplot")
+library(corrplot)
 data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
 head(data)
 
@@ -63,8 +66,6 @@ head(data)
 As you can see, the sales price is slightly right skewed
 
 ```{R}
-#install.packages("corrplot")
-library(corrplot)
 # Get only the numeric data
 numeric_only <- data %>% select_if(is.numeric)
 
@@ -72,4 +73,24 @@ res <- cor(numeric_only)
 
 corrplot(res, tl.cex = .5)
 ```
+Let's also get a correlation plot for each of the categorical variables
+
+```{R}
+# Get only the categorical data
+categorical <- data %>% select_if(negate(is.numeric))
+
+categorical %>% glimpse()
+```
+
+## Hypotheses
+
+Now we have visualized our data, we can make some hypotheses
+
+1. Hypothesis 1
+
+2. Hypothesis 2
+
+3. Hypothesis 3
+
+4. Hypothesis 4
 

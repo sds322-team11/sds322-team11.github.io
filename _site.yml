@@ -4,7 +4,7 @@ navbar:
   left:
     - text: "Project Info"
       href: index.html
-    - text: "Analysis"
+    - text: "Analysis & Hypotheses"
       href: analysis.html
     - text: "Modeling"
       href: modeling.html
