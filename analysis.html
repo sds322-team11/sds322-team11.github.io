@@ -11,7 +11,7 @@
 
 
 
-<title>Team 11 SDS322E Final Project</title>
+<title>Analysis</title>
 
 <script src="site_libs/header-attrs-2.17/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -32,6 +32,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -264,52 +266,99 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Team 11 SDS322E Final Project</h1>
+<h1 class="title toc-ignore">Analysis</h1>
 
 </div>
 
 
-<div id="project" class="section level2">
-<h2>Project:</h2>
-<p>Identifying trends between home attributes and the sales price of the
-homes to approximate what variables have the most impact on the sales
-price and which can be used to predict sales price. Our goal is to
-create a model that can take attributes of homes as inputs and
-accurately predict what the sales price will be.</p>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>We want to analyze the housing sales prices to analyze which
+variables influence the sales price the most. We also want to train a
+model that predicts the sales price of a house given the variables
+necessary, which will be completed under the <a
+href="/modeling">Modeling Page</a></p>
+<p>To begin our analysis of the data we will create correlation
+matrices, visualize individual variables, and look at regression outputs
+to see what variables contribute the most to predicting sales price.</p>
+<p>In order to complete the model training step, we will follow the
+following steps from class: 1. Choose a model 2. cost 3. a 4. a</p>
 </div>
-<div id="goals" class="section level2">
-<h2>Goals:</h2>
-<p>Find which factors appear to most greatly affect the sales price of a
-home. Once these factors are found, explore the predictive power the
-factors have on sales price and whether they can be used to accurately
-predict the sales price of a home (SalePrice).</p>
+<div id="importing-libraries-loading-data" class="section level2">
+<h2>Importing Libraries + Loading Data</h2>
+<pre class="r"><code>library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+data &lt;- read_csv(&quot;~/SDS322E/final_project_homepage/clean_train.csv&quot;)
+head(data)</code></pre>
+<pre><code>## # A tibble: 6 × 81
+##      Id MSSubClass  MSZon…¹ LotFr…² LotArea Street Alley LotSh…³ LandC…⁴ Utili…⁵
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1     1 2-STORY 19… RL           65    8450 Pave   &lt;NA&gt;        0 Lvl           3
+## 2     2 1-STORY 19… RL           80    9600 Pave   &lt;NA&gt;        0 Lvl           3
+## 3     3 2-STORY 19… RL           68   11250 Pave   &lt;NA&gt;        1 Lvl           3
+## 4     4 2-STORY 19… RL           60    9550 Pave   &lt;NA&gt;        1 Lvl           3
+## 5     5 2-STORY 19… RL           84   14260 Pave   &lt;NA&gt;        1 Lvl           3
+## 6     6 1-1/2 STOR… RL           85   14115 Pave   &lt;NA&gt;        1 Lvl           3
+## # … with 71 more variables: LotConfig &lt;chr&gt;, LandSlope &lt;dbl&gt;,
+## #   Neighborhood &lt;chr&gt;, Condition1 &lt;chr&gt;, Condition2 &lt;chr&gt;, BldgType &lt;chr&gt;,
+## #   HouseStyle &lt;chr&gt;, OverallQual &lt;dbl&gt;, OverallCond &lt;dbl&gt;, YearBuilt &lt;dbl&gt;,
+## #   YearRemodAdd &lt;dbl&gt;, RoofStyle &lt;chr&gt;, RoofMatl &lt;chr&gt;, Exterior1st &lt;chr&gt;,
+## #   Exterior2nd &lt;chr&gt;, MasVnrType &lt;chr&gt;, MasVnrArea &lt;dbl&gt;, ExterQual &lt;dbl&gt;,
+## #   ExterCond &lt;dbl&gt;, Foundation &lt;chr&gt;, BsmtQual &lt;dbl&gt;, BsmtCond &lt;dbl&gt;,
+## #   BsmtExposure &lt;dbl&gt;, BsmtFinType1 &lt;dbl&gt;, BsmtFinSF1 &lt;dbl&gt;, …</code></pre>
 </div>
-<div id="link-to-data" class="section level2">
-<h2>Link to data:</h2>
-<p>A link to our data can be found
-<a href="https://www.kaggle.com/datasets/rsizem2/house-prices-ames-cleaned-dataset?select=new_train.csv" target="_blank">
-Here</a></p>
-<p>Descriptions of the columns can be found at
-<a href="https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data" target="_blank">
-Here</a></p>
-</div>
-<div id="information-about-data" class="section level2">
-<h2>Information about data:</h2>
-<p>We used an open-source dataset found on Kaggle that has already been
-cleaned. The dataset contains 80 predictive variables related to
-attributes of a house. This dataset also has 1456 observations. This
-dataset is the processed version of the Ames Housing dataset that was
-used in data science education.</p>
-</div>
-<div id="references" class="section level2">
-<h2>References:</h2>
-<p>The Ames Housing dataset was compiled by Dean De Cock for use in data
-science education. link: <a
-href="http://www.amstat.org/publications/jse/v19n3/decock.pdf"
-class="uri">http://www.amstat.org/publications/jse/v19n3/decock.pdf</a></p>
-<div id="you-can-find-our-analysis-here" class="section level5">
-<h5>You can find our analysis <a href="/analysis">here</a>!</h5>
-<hr />
+<div id="visualization" class="section level1">
+<h1>Visualization</h1>
+<div id="histogram-of-saleprice-dependent-variable"
+class="section level3">
+<h3>Histogram of SalePrice (dependent variable):</h3>
+<pre class="r"><code>data %&gt;% 
+  ggplot(aes(x=SalePrice)) +
+  geom_histogram(color = &quot;#000000&quot;, fill = &quot;#0099F8&quot;) + 
+  labs(
+    title = &quot;Histogram of SalesPrice in Housing Data&quot;,
+    caption = &quot;Source: fill me in&quot;,
+    x = &quot;Sales Price in $USD&quot;,
+    y = &quot;Count&quot;
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(color = &quot;#0099F8&quot;, size = 16, face = &quot;bold&quot;),
+    plot.subtitle = element_text(size = 10, face = &quot;bold&quot;),
+    plot.caption = element_text(face = &quot;italic&quot;)
+  )</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="analysis_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>head(data)</code></pre>
+<pre><code>## # A tibble: 6 × 81
+##      Id MSSubClass  MSZon…¹ LotFr…² LotArea Street Alley LotSh…³ LandC…⁴ Utili…⁵
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1     1 2-STORY 19… RL           65    8450 Pave   &lt;NA&gt;        0 Lvl           3
+## 2     2 1-STORY 19… RL           80    9600 Pave   &lt;NA&gt;        0 Lvl           3
+## 3     3 2-STORY 19… RL           68   11250 Pave   &lt;NA&gt;        1 Lvl           3
+## 4     4 2-STORY 19… RL           60    9550 Pave   &lt;NA&gt;        1 Lvl           3
+## 5     5 2-STORY 19… RL           84   14260 Pave   &lt;NA&gt;        1 Lvl           3
+## 6     6 1-1/2 STOR… RL           85   14115 Pave   &lt;NA&gt;        1 Lvl           3
+## # … with 71 more variables: LotConfig &lt;chr&gt;, LandSlope &lt;dbl&gt;,
+## #   Neighborhood &lt;chr&gt;, Condition1 &lt;chr&gt;, Condition2 &lt;chr&gt;, BldgType &lt;chr&gt;,
+## #   HouseStyle &lt;chr&gt;, OverallQual &lt;dbl&gt;, OverallCond &lt;dbl&gt;, YearBuilt &lt;dbl&gt;,
+## #   YearRemodAdd &lt;dbl&gt;, RoofStyle &lt;chr&gt;, RoofMatl &lt;chr&gt;, Exterior1st &lt;chr&gt;,
+## #   Exterior2nd &lt;chr&gt;, MasVnrType &lt;chr&gt;, MasVnrArea &lt;dbl&gt;, ExterQual &lt;dbl&gt;,
+## #   ExterCond &lt;dbl&gt;, Foundation &lt;chr&gt;, BsmtQual &lt;dbl&gt;, BsmtCond &lt;dbl&gt;,
+## #   BsmtExposure &lt;dbl&gt;, BsmtFinType1 &lt;dbl&gt;, BsmtFinSF1 &lt;dbl&gt;, …</code></pre>
+<p>As you can see, the sales price is slightly right skewed</p>
+<pre class="r"><code>#install.packages(&quot;corrplot&quot;)
+library(corrplot)</code></pre>
+<pre><code>## corrplot 0.92 loaded</code></pre>
+<pre class="r"><code># Get only the numeric data
+numeric_only &lt;- data %&gt;% select_if(is.numeric)
+
+res &lt;- cor(numeric_only)
+
+corrplot(res, tl.cex = .5)</code></pre>
+<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 </div>
 </div>
 

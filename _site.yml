@@ -6,5 +6,7 @@ navbar:
       href: index.html
     - text: "Analysis"
       href: analysis.html
+    - text: "Modeling"
+      href: modeling.html
 output_dir: "."
       

@@ -1,0 +1,21 @@
+---
+title: "Modeling"
+pagetitle: 'Modeling'
+output: 
+  html_document: 
+    css: "styles.css"
+---
+
+```{r, include=FALSE}
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+
+```
+## Modeling Summary
+
+In order to complete the model training step, we will follow the following steps from class:
+1. Choose a model
+2. cost
+3. a
+4. a
+
+

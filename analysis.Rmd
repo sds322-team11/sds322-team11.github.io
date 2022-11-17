@@ -12,9 +12,9 @@ htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 ```
 ## Summary
 
-We want to analyze the housing sales prices to analyze which variables influence the sales price the most. We also want to train a model that predicts the sales price of a house given the variables necessary.
+We want to analyze the housing sales prices to analyze which variables influence the sales price the most. We also want to train a model that predicts the sales price of a house given the variables necessary, which will be completed under the [Modeling Page](/modeling)
 
-In order to complete the analysis step, we will create correlation matrices, visualize individual variables, and look at regression outputs to see what variables contribute the most to predicting sales price.
+To begin our analysis of the data we will create correlation matrices, visualize individual variables, and look at regression outputs to see what variables contribute the most to predicting sales price.
 
 In order to complete the model training step, we will follow the following steps from class:
 1. Choose a model
@@ -27,6 +27,7 @@ In order to complete the model training step, we will follow the following steps
 
 ```{R, message=FALSE}
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(readr)
 data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
@@ -46,7 +47,7 @@ data %>%
   geom_histogram(color = "#000000", fill = "#0099F8") + 
   labs(
     title = "Histogram of SalesPrice in Housing Data",
-    caption = "Source: Gapminder dataset",
+    caption = "Source: fill me in",
     x = "Sales Price in $USD",
     y = "Count"
   ) +
@@ -64,11 +65,11 @@ As you can see, the sales price is slightly right skewed
 ```{R}
 #install.packages("corrplot")
 library(corrplot)
-numeric_only <- select_if(data, is.numeric)
-# res <- cor(numeric_only)
-# corrplot(res, type = "upper", order = "hclust",
-#          tl.col = "black", tl.srt = 45)
-```
+# Get only the numeric data
+numeric_only <- data %>% select_if(is.numeric)
 
-# Choosing a Model
+res <- cor(numeric_only)
+
+corrplot(res, tl.cex = .5)
+```
 
