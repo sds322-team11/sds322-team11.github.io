@@ -351,7 +351,8 @@ class="section level3">
 ## #   Exterior2nd &lt;chr&gt;, MasVnrType &lt;chr&gt;, MasVnrArea &lt;dbl&gt;, ExterQual &lt;dbl&gt;,
 ## #   ExterCond &lt;dbl&gt;, Foundation &lt;chr&gt;, BsmtQual &lt;dbl&gt;, BsmtCond &lt;dbl&gt;,
 ## #   BsmtExposure &lt;dbl&gt;, BsmtFinType1 &lt;dbl&gt;, BsmtFinSF1 &lt;dbl&gt;, …</code></pre>
-<p>As you can see, the sales price is slightly right skewed</p>
+<p>As you can see, the sales price of the homes is slightly
+right-skewed</p>
 <pre class="r"><code># Get only the numeric data
 numeric_only &lt;- data %&gt;% select_if(is.numeric)
 
@@ -359,11 +360,9 @@ res &lt;- cor(numeric_only)
 
 corrplot(res, tl.cex = .5)</code></pre>
 <p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" />
-Let’s also get a correlation plot for each of the categorical
-variables</p>
+TODO : create some sort of analysis of the categorical variables</p>
 <pre class="r"><code># Get only the categorical data
 categorical &lt;- data %&gt;% select_if(negate(is.numeric))
-
 categorical %&gt;% glimpse()</code></pre>
 <pre><code>## Rows: 1,456
 ## Columns: 23
@@ -391,8 +390,12 @@ categorical %&gt;% glimpse()</code></pre>
 ## $ SaleType      &lt;chr&gt; &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;WD&quot;, &quot;W…
 ## $ SaleCondition &lt;chr&gt; &quot;Normal&quot;, &quot;Normal&quot;, &quot;Normal&quot;, &quot;Abnorml&quot;, &quot;Normal&quot;, &quot;Norm…</code></pre>
 </div>
-<div id="hypotheses" class="section level2">
-<h2>Hypotheses</h2>
+<div id="todo-anova" class="section level2">
+<h2>TODO: ANOVA</h2>
+<p>Create some sort of analysis of variance</p>
+</div>
+<div id="todo-hypotheses" class="section level2">
+<h2>TODO: Hypotheses</h2>
 <p>Now we have visualized our data, we can make some hypotheses</p>
 <ol style="list-style-type: decimal">
 <li><p>Hypothesis 1</p></li>

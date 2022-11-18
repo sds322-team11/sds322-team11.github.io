@@ -34,6 +34,23 @@ In order to complete the model training step, we will follow the following steps
 
 We know that our output will be a number so we will use some type of regression model. Let's try out a few regression models
 
+### Import model libraries
+```{python}
+
+```
+
+### KNN Regressor
+```{python}
+
+```
+
+
+### Linear Regression
+```{python}
+
+```
+
+### Random-Forest Regressor
 ```{python}
 
 ```

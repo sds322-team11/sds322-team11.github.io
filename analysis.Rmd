@@ -63,34 +63,35 @@ data %>%
 head(data)
 ```
 
-As you can see, the sales price is slightly right skewed
+As you can see, the sales price of the homes is slightly right-skewed
 
 ```{R}
 # Get only the numeric data
 numeric_only <- data %>% select_if(is.numeric)
-
 res <- cor(numeric_only)
-
-corrplot(res, tl.cex = .5)
+res %>% pivot_longer(c(0,10), names_to = "var2")
+#corrplot(res, tl.cex = .5)
 ```
-Let's also get a correlation plot for each of the categorical variables
+TODO : create some sort of analysis of the categorical variables
 
 ```{R}
 # Get only the categorical data
 categorical <- data %>% select_if(negate(is.numeric))
-
 categorical %>% glimpse()
 ```
 
-## Hypotheses
+## TODO: ANOVA 
+Create some sort of analysis of variance
+
+## TODO: Hypotheses
 
 Now we have visualized our data, we can make some hypotheses
 
-1. Hypothesis 1
+1. TODO Hypothesis 1
 
-2. Hypothesis 2
+2. TODO Hypothesis 2
 
-3. Hypothesis 3
+3. TODO Hypothesis 3
 
-4. Hypothesis 4
+4. TODO Hypothesis 4
 
