@@ -9,9 +9,11 @@ output:
 ```{r setup, include=FALSE, echo=TRUE}
 library(reticulate)
 use_python(Sys.which("python3")) # Use python3
+Sys.which("python3")
 ```
 
-```{r, include=FALSE}
+
+```{r html-setup, include=FALSE}
 htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 
 ```
@@ -27,30 +29,222 @@ In order to complete the model training step, we will follow the following steps
 
 4. Check the Performance of Fitted Model
 
-```{R}
-
-```
 ## Defining Our Model class
 
 We know that our output will be a number so we will use some type of regression model. Let's try out a few regression models
 
-### Import model libraries
-```{python}
+## Import model libraries
+```{python importing}
+import sklearn
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import make_column_transformer
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+```
+
+
+### Normalizing data
+```{python normalization}
+df = pd.read_csv('clean_train.csv')
+
+# create a scaler object
+std_scaler = StandardScaler()
+# fit and transform the data
+numeric_cols = list(df.select_dtypes(include=['int64','float64']).columns)
+
+# Remove SalePrice from the values to be normalized
+#numeric_cols.remove("SalePrice")
+# Normalize all numeric values
+pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
+  columns=numeric_cols)
+df
+```
+
+
+## Pre-processing/cleaning data
+```{python dummies}
+
+
+# Create dummy variable columns for the categorical variables
+categorical_columns = df.select_dtypes(include=['object','bool']).columns
+for column in categorical_columns:
+    # Print out the column names
+    print(f"column {column}: ",df[column].unique())
+    dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +'_' + str(x))
+    df = pd.concat([df, dummies], axis=1)
+    df = df.drop([column], axis=1)
+# Drop NA columns
+print(df.shape)
+df.dropna(inplace=True)
+print(df.shape)
+# Normalize the numerical data with standard scaler
+# numerical_columns = df.select_dtypes(include=['int64','float64']).columns
+# scaler = StandardScaler()
+
 
 ```
 
-### KNN Regressor
-```{python}
+### Create training and testing sets
+```{python training-separation}
 
+# Create dataframes for independent and dependent variables
+# Dependent variable
+y = df['SalePrice']
+# Independent Variable
+X = df.drop('SalePrice', axis=1)
+
+# Create training and test sets. Test is .25 of data
+X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random_state=123)
+```
+
+### Random Forest Regressor
+```{python RFRegressor}
+from sklearn.ensemble import RandomForestRegressor
+rf_mses = []
+max_depths = []
+for d in range(1,15):
+    rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
+    # Fit the data to the model
+    rf_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    rf_y_pred = rf_regr.predict(X_test)
+    # Report Mean Square Error
+    rf_mses.append(mean_squared_error(y_test, rf_y_pred))
+    max_depths.append(d)
+    #print(f"Mean Squared Error: {rf_mses[-1]}")
+best_n = max_depths[rf_mses.index(min(rf_mses))]
+rf_mse = min(rf_mses)
+print(f"Best MSE of {rf_mse} at max_depth of {best_n}")
+
+import matplotlib.pyplot as plt
+plt.close()
+plt.plot(max_depths, rf_mses)
+plt.show()
+
+# Now that we know the best n, train again
+rf_regr = RandomForestRegressor(max_depth=best_n, random_state=0)
+# Fit the data to the model
+rf_regr.fit(X_train, y_train)
+# Make predictions on test data
+rf_y_pred = rf_regr.predict(X_test)
+# Report Mean Square Error
+
+```
+
+```{python RFRegressor-Eval}
+rf_mse = mean_squared_error(y_test, rf_y_pred)
+print(f"Mean Squared Error: {rf_mse}")
+
+max_val = max(max(y_test),max(rf_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(rf_y_pred, y_test, '*r')
+plt.xlabel('Random Forest Regressor Predicted Y', size=20)
+plt.ylabel('True Y', size=20)
+plt.title(f'Random Forest Regressor Diagnosis Plot (neighbors={best_n})')
+plt.show()
 ```
 
 
 ### Linear Regression
-```{python}
+```{python LinearRegressor}
+# Train a linear model
+lin_regr = LinearRegression()
+lin_regr.fit(X_train, y_train)
+# Make predictions on test data
+lin_y_pred = lin_regr.predict(X_test)
+# Report Mean Square Error
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+lin_mse
 
+max_val = max(max(y_test),max(lin_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(lin_y_pred, y_test, '*r')
+plt.xlabel('Linear Model Predicted Y', size=20)
+plt.ylabel('True Y', size=20)
+plt.title('Linear Model Diagnosis Plot')
+plt.show()
 ```
 
-### Random-Forest Regressor
-```{python}
+### KNN Regressor
+```{python KNNRegressor}
+from sklearn.neighbors import KNeighborsRegressor
+knn_mses = []
+nums_neighbors = []
+for k in range(1,20):
+    knn_regr = KNeighborsRegressor(n_neighbors=k)
+    # Fit the data to the model
+    knn_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    knn_y_pred = knn_regr.predict(X_test)
+    # Report Mean Square Error
+    knn_mses.append(mean_squared_error(y_test, knn_y_pred))
+    nums_neighbors.append(k)
+    #print(f"Mean Squared Error: {knn_mses[-1]}")
+best_k = nums_neighbors[knn_mses.index(min(knn_mses))]
+knn_mse = min(knn_mses)
+print(f"Best MSE of {rf_mse} at n_neighbors of {best_k}")
 
+import matplotlib.pyplot as plt
+plt.close()
+plt.plot(nums_neighbors, knn_mses)
+plt.title('MSE of different n_neighbors for KNN')
+plt.xlabel('Number of Neighbors', size=20)
+plt.ylabel('Mean Square Error', size=20)
+plt.show()
+
+# Now that we know the best n, train again
+knn_regr = KNeighborsRegressor(n_neighbors=best_k)
+# Fit the data to the model
+knn_regr.fit(X_train, y_train)
+# Make predictions on test data
+knn_y_pred = knn_regr.predict(X_test)
+# Report Mean Square Error
+```
+### Neural Network Regressor
+```{python neural-network}
+from sklearn.neural_network import MLPRegressor
+vals = []
+combos = []
+regr = MLPRegressor(random_state=1,
+  max_iter=2000, 
+  hidden_layer_sizes=(25,5),
+  learning_rate="constant" # {‘constant’, ‘invscaling’, ‘adaptive’}
+  ).fit(X_train, y_train)
+MLP_pred = regr.predict(X_test)
+print(regr.score(X_test, y_test))
+```
+
+### Evaluation of Results
+```{python evaluation}
+
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+knn_mse = mean_squared_error(y_test, knn_y_pred)
+rf_mse = mean_squared_error(y_test, rf_y_pred)
+
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(lin_y_pred, y_test, '*r')
+plt.plot(knn_y_pred, y_test, '*b')
+plt.plot(rf_y_pred, y_test, '*y')
+# apply legend()
+plt.xlabel('Linear Model Predicted Y', size=20)
+plt.ylabel('True Y', size=20)
+plt.title('Model Diagnosis Plot (all models)')
+plt.legend(['Perfect fit',"Linear Model","KNN Model","RF Model"])
+plt.show()
+print("RMSEs---------------")
+print(f"Lin: {lin_mse:,}")
+print(f"KNN: {knn_mse:,}")
+print(f"RFR: {rf_mse:,}")
+print("R^2 Scores---------------")
+print(f"Lin: {lin_regr.score(X_test, y_test)}")
+print(f"KNN: {knn_regr.score(X_test, y_test)}")
+print(f"RFR: {rf_regr.score(X_test, y_test)}")
 ```

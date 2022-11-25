@@ -286,17 +286,319 @@ following steps from class:</p>
 <h2>Defining Our Model class</h2>
 <p>We know that our output will be a number so we will use some type of
 regression model. Let’s try out a few regression models</p>
-<div id="import-model-libraries" class="section level3">
-<h3>Import model libraries</h3>
 </div>
-<div id="knn-regressor" class="section level3">
-<h3>KNN Regressor</h3>
+<div id="import-model-libraries" class="section level2">
+<h2>Import model libraries</h2>
+<pre class="python"><code>import sklearn
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import make_column_transformer
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use(&#39;Agg&#39;)</code></pre>
+<div id="normalizing-data" class="section level3">
+<h3>Normalizing data</h3>
+<pre class="python"><code>df = pd.read_csv(&#39;clean_train.csv&#39;)
+
+# create a scaler object
+std_scaler = StandardScaler()
+# fit and transform the data
+numeric_cols = list(df.select_dtypes(include=[&#39;int64&#39;,&#39;float64&#39;]).columns)
+
+# Remove SalePrice from the values to be normalized
+#numeric_cols.remove(&quot;SalePrice&quot;)
+# Normalize all numeric values
+pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
+  columns=numeric_cols)</code></pre>
+<pre><code>##             Id  LotFrontage   LotArea  ...   MiscVal    YrSold  SalePrice
+## 0    -1.729139    -0.203664 -0.202770  ... -0.088475  0.137472   0.369749
+## 1    -1.726767     0.447241 -0.086107  ... -0.088475 -0.615009   0.017592
+## 2    -1.724395    -0.073483  0.081281  ... -0.088475  0.137472   0.565392
+## 3    -1.722023    -0.420632 -0.091179  ... -0.088475 -1.367490  -0.523687
+## 4    -1.719651     0.620816  0.386636  ... -0.088475  0.137472   0.911028
+## ...        ...          ...       ...  ...       ...       ...        ...
+## 1451  1.722179    -0.333845 -0.256842  ... -0.088475 -0.615009  -0.067187
+## 1452  1.724551     0.664209  0.276566  ... -0.088475  1.642435   0.389314
+## 1453  1.726923    -0.160270 -0.142714  ...  4.944023  1.642435   1.126236
+## 1454  1.729295    -0.073483 -0.074237  ... -0.088475  1.642435  -0.495971
+## 1455  1.731667     0.230273 -0.051919  ... -0.088475  0.137472  -0.425866
+## 
+## [1456 rows x 58 columns]</code></pre>
+<pre class="python"><code>df</code></pre>
+<pre><code>##         Id     MSSubClass MSZoning  ...  SaleType  SaleCondition SalePrice
+## 0        1  2-STORY 1946+       RL  ...        WD         Normal    208500
+## 1        2  1-STORY 1946+       RL  ...        WD         Normal    181500
+## 2        3  2-STORY 1946+       RL  ...        WD         Normal    223500
+## 3        4  2-STORY 1945-       RL  ...        WD        Abnorml    140000
+## 4        5  2-STORY 1946+       RL  ...        WD         Normal    250000
+## ...    ...            ...      ...  ...       ...            ...       ...
+## 1451  1456  2-STORY 1946+       RL  ...        WD         Normal    175000
+## 1452  1457  1-STORY 1946+       RL  ...        WD         Normal    210000
+## 1453  1458  2-STORY 1945-       RL  ...        WD         Normal    266500
+## 1454  1459  1-STORY 1946+       RL  ...        WD         Normal    142125
+## 1455  1460  1-STORY 1946+       RL  ...        WD         Normal    147500
+## 
+## [1456 rows x 81 columns]</code></pre>
+</div>
+</div>
+<div id="pre-processingcleaning-data" class="section level2">
+<h2>Pre-processing/cleaning data</h2>
+<pre class="python"><code>
+
+# Create dummy variable columns for the categorical variables
+categorical_columns = df.select_dtypes(include=[&#39;object&#39;,&#39;bool&#39;]).columns
+for column in categorical_columns:
+    # Print out the column names
+    print(f&quot;column {column}: &quot;,df[column].unique())
+    dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +&#39;_&#39; + str(x))
+    df = pd.concat([df, dummies], axis=1)
+    df = df.drop([column], axis=1)
+# Drop NA columns</code></pre>
+<pre><code>## column MSSubClass:  [&#39;2-STORY 1946+&#39; &#39;1-STORY 1946+&#39; &#39;2-STORY 1945-&#39; &#39;1-1/2 STORY FIN&#39;
+##  &#39;2 FAMILY CONVERSION&#39; &#39;1-1/2 STORY UNF&#39; &#39;DUPLEX&#39; &#39;1-STORY PUD 1946+&#39;
+##  &#39;1-STORY 1945-&#39; &#39;SPLIT FOYER&#39; &#39;SPLIT OR MULTI-LEVEL&#39; &#39;2-STORY PUD 1946+&#39;
+##  &#39;2-1/2 STORY&#39; &#39;MULTILEVEL PUD&#39; &#39;1-STORY W/ ATTIC&#39;]
+## column MSZoning:  [&#39;RL&#39; &#39;RM&#39; &#39;C&#39; &#39;FV&#39; &#39;RH&#39;]
+## column Street:  [&#39;Pave&#39; &#39;Grvl&#39;]
+## column Alley:  [nan &#39;Grvl&#39; &#39;Pave&#39;]
+## column LandContour:  [&#39;Lvl&#39; &#39;Bnk&#39; &#39;Low&#39; &#39;HLS&#39;]
+## column LotConfig:  [&#39;Inside&#39; &#39;FR2&#39; &#39;Corner&#39; &#39;CulDSac&#39; &#39;FR3&#39;]
+## column Neighborhood:  [&#39;CollgCr&#39; &#39;Veenker&#39; &#39;Crawfor&#39; &#39;NoRidge&#39; &#39;Mitchel&#39; &#39;Somerst&#39; &#39;NWAmes&#39;
+##  &#39;OldTown&#39; &#39;BrkSide&#39; &#39;Sawyer&#39; &#39;NridgHt&#39; &#39;NAmes&#39; &#39;SawyerW&#39; &#39;IDOTRR&#39;
+##  &#39;MeadowV&#39; &#39;Edwards&#39; &#39;Timber&#39; &#39;Gilbert&#39; &#39;StoneBr&#39; &#39;ClearCr&#39; &#39;NPkVill&#39;
+##  &#39;Blmngtn&#39; &#39;BrDale&#39; &#39;SWISU&#39; &#39;Blueste&#39;]
+## column Condition1:  [&#39;Norm&#39; &#39;Feedr&#39; &#39;PosN&#39; &#39;Artery&#39; &#39;RRAe&#39; &#39;RRNn&#39; &#39;RRAn&#39; &#39;PosA&#39; &#39;RRNe&#39;]
+## column Condition2:  [&#39;Norm&#39; &#39;Artery&#39; &#39;RRNn&#39; &#39;Feedr&#39; &#39;PosA&#39; &#39;PosN&#39; &#39;RRAn&#39; &#39;RRAe&#39;]
+## column BldgType:  [&#39;1Fam&#39; &#39;2fmCon&#39; &#39;Duplex&#39; &#39;TwnhsE&#39; &#39;Twnhs&#39;]
+## column HouseStyle:  [&#39;2Story&#39; &#39;1Story&#39; &#39;1.5Fin&#39; &#39;1.5Unf&#39; &#39;SFoyer&#39; &#39;SLvl&#39; &#39;2.5Unf&#39; &#39;2.5Fin&#39;]
+## column RoofStyle:  [&#39;Gable&#39; &#39;Hip&#39; &#39;Gambrel&#39; &#39;Mansard&#39; &#39;Flat&#39; &#39;Shed&#39;]
+## column RoofMatl:  [&#39;CompShg&#39; &#39;WdShngl&#39; &#39;Metal&#39; &#39;WdShake&#39; &#39;Membran&#39; &#39;Tar&amp;Grv&#39; &#39;Roll&#39;]
+## column Exterior1st:  [&#39;VinylSd&#39; &#39;MetalSd&#39; &#39;Wd Sdng&#39; &#39;HdBoard&#39; &#39;BrkFace&#39; &#39;WdShing&#39; &#39;CemntBd&#39;
+##  &#39;Plywood&#39; &#39;AsbShng&#39; &#39;Stucco&#39; &#39;BrkComm&#39; &#39;AsphShn&#39; &#39;Stone&#39; &#39;ImStucc&#39;
+##  &#39;CBlock&#39;]
+## column Exterior2nd:  [&#39;VinylSd&#39; &#39;MetalSd&#39; &#39;WdShing&#39; &#39;HdBoard&#39; &#39;Plywood&#39; &#39;Wd Sdng&#39; &#39;CmentBd&#39;
+##  &#39;BrkFace&#39; &#39;Stucco&#39; &#39;AsbShng&#39; &#39;BrkComm&#39; &#39;ImStucc&#39; &#39;AsphShn&#39; &#39;Stone&#39;
+##  &#39;Other&#39; &#39;CBlock&#39;]
+## column MasVnrType:  [&#39;BrkFace&#39; &#39;None&#39; &#39;Stone&#39; &#39;BrkCmn&#39;]
+## column Foundation:  [&#39;PConc&#39; &#39;CBlock&#39; &#39;BrkTil&#39; &#39;Wood&#39; &#39;Slab&#39; &#39;Stone&#39;]
+## column Heating:  [&#39;GasA&#39; &#39;GasW&#39; &#39;Grav&#39; &#39;Wall&#39; &#39;OthW&#39; &#39;Floor&#39;]
+## column GarageType:  [&#39;Attchd&#39; &#39;Detchd&#39; &#39;BuiltIn&#39; &#39;CarPort&#39; nan &#39;Basment&#39; &#39;2Types&#39;]
+## column MiscFeature:  [nan &#39;Shed&#39; &#39;Gar2&#39; &#39;Othr&#39; &#39;TenC&#39;]
+## column MoSold:  [&#39;Feb&#39; &#39;May&#39; &#39;Sept&#39; &#39;Dec&#39; &#39;Oct&#39; &#39;Aug&#39; &#39;Nov&#39; &#39;Apr&#39; &#39;Jan&#39; &#39;July&#39; &#39;Mar&#39;
+##  &#39;June&#39;]
+## column SaleType:  [&#39;WD&#39; &#39;New&#39; &#39;COD&#39; &#39;ConLD&#39; &#39;ConLI&#39; &#39;CWD&#39; &#39;ConLw&#39; &#39;Con&#39; &#39;Oth&#39;]
+## column SaleCondition:  [&#39;Normal&#39; &#39;Abnorml&#39; &#39;Partial&#39; &#39;AdjLand&#39; &#39;Alloca&#39; &#39;Family&#39;]</code></pre>
+<pre class="python"><code>print(df.shape)</code></pre>
+<pre><code>## (1456, 243)</code></pre>
+<pre class="python"><code>df.dropna(inplace=True)
+print(df.shape)
+# Normalize the numerical data with standard scaler
+# numerical_columns = df.select_dtypes(include=[&#39;int64&#39;,&#39;float64&#39;]).columns
+# scaler = StandardScaler()
+</code></pre>
+<pre><code>## (1197, 243)</code></pre>
+<div id="create-training-and-testing-sets" class="section level3">
+<h3>Create training and testing sets</h3>
+<pre class="python"><code>
+# Create dataframes for independent and dependent variables
+# Dependent variable
+y = df[&#39;SalePrice&#39;]
+# Independent Variable
+X = df.drop(&#39;SalePrice&#39;, axis=1)
+
+# Create training and test sets. Test is .25 of data
+X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random_state=123)</code></pre>
+</div>
+<div id="random-forest-regressor" class="section level3">
+<h3>Random Forest Regressor</h3>
+<pre class="python"><code>from sklearn.ensemble import RandomForestRegressor
+rf_mses = []
+max_depths = []
+for d in range(1,15):
+    rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
+    # Fit the data to the model
+    rf_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    rf_y_pred = rf_regr.predict(X_test)
+    # Report Mean Square Error
+    rf_mses.append(mean_squared_error(y_test, rf_y_pred))
+    max_depths.append(d)
+    #print(f&quot;Mean Squared Error: {rf_mses[-1]}&quot;)</code></pre>
+<pre><code>## RandomForestRegressor(max_depth=1, random_state=0)
+## RandomForestRegressor(max_depth=2, random_state=0)
+## RandomForestRegressor(max_depth=3, random_state=0)
+## RandomForestRegressor(max_depth=4, random_state=0)
+## RandomForestRegressor(max_depth=5, random_state=0)
+## RandomForestRegressor(max_depth=6, random_state=0)
+## RandomForestRegressor(max_depth=7, random_state=0)
+## RandomForestRegressor(max_depth=8, random_state=0)
+## RandomForestRegressor(max_depth=9, random_state=0)
+## RandomForestRegressor(max_depth=10, random_state=0)
+## RandomForestRegressor(max_depth=11, random_state=0)
+## RandomForestRegressor(max_depth=12, random_state=0)
+## RandomForestRegressor(max_depth=13, random_state=0)
+## RandomForestRegressor(max_depth=14, random_state=0)</code></pre>
+<pre class="python"><code>best_n = max_depths[rf_mses.index(min(rf_mses))]
+rf_mse = min(rf_mses)
+print(f&quot;Best MSE of {rf_mse} at max_depth of {best_n}&quot;)</code></pre>
+<pre><code>## Best MSE of 635719120.6646385 at max_depth of 9</code></pre>
+<pre class="python"><code>import matplotlib.pyplot as plt
+plt.close()
+plt.plot(max_depths, rf_mses)
+plt.show()
+
+# Now that we know the best n, train again</code></pre>
+<p><img src="modeling_files/figure-html/RFRegressor-1.png" width="672" /></p>
+<pre class="python"><code>rf_regr = RandomForestRegressor(max_depth=best_n, random_state=0)
+# Fit the data to the model
+rf_regr.fit(X_train, y_train)
+# Make predictions on test data</code></pre>
+<pre><code>## RandomForestRegressor(max_depth=9, random_state=0)</code></pre>
+<pre class="python"><code>rf_y_pred = rf_regr.predict(X_test)
+# Report Mean Square Error</code></pre>
+<pre class="python"><code>rf_mse = mean_squared_error(y_test, rf_y_pred)
+print(f&quot;Mean Squared Error: {rf_mse}&quot;)</code></pre>
+<pre><code>## Mean Squared Error: 635719120.6646385</code></pre>
+<pre class="python"><code>max_val = max(max(y_test),max(rf_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(rf_y_pred, y_test, &#39;*r&#39;)
+plt.xlabel(&#39;Random Forest Regressor Predicted Y&#39;, size=20)
+plt.ylabel(&#39;True Y&#39;, size=20)
+plt.title(f&#39;Random Forest Regressor Diagnosis Plot (neighbors={best_n})&#39;)
+plt.show()</code></pre>
+<p><img src="modeling_files/figure-html/RFRegressor-Eval-3.png" width="672" /></p>
 </div>
 <div id="linear-regression" class="section level3">
 <h3>Linear Regression</h3>
+<pre class="python"><code># Train a linear model
+lin_regr = LinearRegression()
+lin_regr.fit(X_train, y_train)
+# Make predictions on test data</code></pre>
+<pre><code>## LinearRegression()</code></pre>
+<pre class="python"><code>lin_y_pred = lin_regr.predict(X_test)
+# Report Mean Square Error
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+lin_mse</code></pre>
+<pre><code>## 923829749.6999959</code></pre>
+<pre class="python"><code>max_val = max(max(y_test),max(lin_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(lin_y_pred, y_test, &#39;*r&#39;)
+plt.xlabel(&#39;Linear Model Predicted Y&#39;, size=20)
+plt.ylabel(&#39;True Y&#39;, size=20)
+plt.title(&#39;Linear Model Diagnosis Plot&#39;)
+plt.show()</code></pre>
+<p><img src="modeling_files/figure-html/LinearRegressor-5.png" width="672" /></p>
 </div>
-<div id="random-forest-regressor" class="section level3">
-<h3>Random-Forest Regressor</h3>
+<div id="knn-regressor" class="section level3">
+<h3>KNN Regressor</h3>
+<pre class="python"><code>from sklearn.neighbors import KNeighborsRegressor
+knn_mses = []
+nums_neighbors = []
+for k in range(1,20):
+    knn_regr = KNeighborsRegressor(n_neighbors=k)
+    # Fit the data to the model
+    knn_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    knn_y_pred = knn_regr.predict(X_test)
+    # Report Mean Square Error
+    knn_mses.append(mean_squared_error(y_test, knn_y_pred))
+    nums_neighbors.append(k)
+    #print(f&quot;Mean Squared Error: {knn_mses[-1]}&quot;)</code></pre>
+<pre><code>## KNeighborsRegressor(n_neighbors=1)
+## KNeighborsRegressor(n_neighbors=2)
+## KNeighborsRegressor(n_neighbors=3)
+## KNeighborsRegressor(n_neighbors=4)
+## KNeighborsRegressor()
+## KNeighborsRegressor(n_neighbors=6)
+## KNeighborsRegressor(n_neighbors=7)
+## KNeighborsRegressor(n_neighbors=8)
+## KNeighborsRegressor(n_neighbors=9)
+## KNeighborsRegressor(n_neighbors=10)
+## KNeighborsRegressor(n_neighbors=11)
+## KNeighborsRegressor(n_neighbors=12)
+## KNeighborsRegressor(n_neighbors=13)
+## KNeighborsRegressor(n_neighbors=14)
+## KNeighborsRegressor(n_neighbors=15)
+## KNeighborsRegressor(n_neighbors=16)
+## KNeighborsRegressor(n_neighbors=17)
+## KNeighborsRegressor(n_neighbors=18)
+## KNeighborsRegressor(n_neighbors=19)</code></pre>
+<pre class="python"><code>best_k = nums_neighbors[knn_mses.index(min(knn_mses))]
+knn_mse = min(knn_mses)
+print(f&quot;Best MSE of {rf_mse} at n_neighbors of {best_k}&quot;)</code></pre>
+<pre><code>## Best MSE of 635719120.6646385 at n_neighbors of 5</code></pre>
+<pre class="python"><code>import matplotlib.pyplot as plt
+plt.close()
+plt.plot(nums_neighbors, knn_mses)
+plt.title(&#39;MSE of different n_neighbors for KNN&#39;)
+plt.xlabel(&#39;Number of Neighbors&#39;, size=20)
+plt.ylabel(&#39;Mean Square Error&#39;, size=20)
+plt.show()
+
+# Now that we know the best n, train again</code></pre>
+<p><img src="modeling_files/figure-html/KNNRegressor-7.png" width="672" /></p>
+<pre class="python"><code>knn_regr = KNeighborsRegressor(n_neighbors=best_k)
+# Fit the data to the model
+knn_regr.fit(X_train, y_train)
+# Make predictions on test data</code></pre>
+<pre><code>## KNeighborsRegressor()</code></pre>
+<pre class="python"><code>knn_y_pred = knn_regr.predict(X_test)
+# Report Mean Square Error</code></pre>
+</div>
+<div id="neural-network-regressor" class="section level3">
+<h3>Neural Network Regressor</h3>
+<pre class="python"><code>from sklearn.neural_network import MLPRegressor
+vals = []
+combos = []
+regr = MLPRegressor(random_state=1,
+  max_iter=2000, 
+  hidden_layer_sizes=(25,5),
+  learning_rate=&quot;constant&quot; # {‘constant’, ‘invscaling’, ‘adaptive’}
+  ).fit(X_train, y_train)
+MLP_pred = regr.predict(X_test)
+print(regr.score(X_test, y_test))</code></pre>
+<pre><code>## 0.8585620450523523</code></pre>
+</div>
+<div id="evaluation-of-results" class="section level3">
+<h3>Evaluation of Results</h3>
+<pre class="python"><code>
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+knn_mse = mean_squared_error(y_test, knn_y_pred)
+rf_mse = mean_squared_error(y_test, rf_y_pred)
+
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(lin_y_pred, y_test, &#39;*r&#39;)
+plt.plot(knn_y_pred, y_test, &#39;*b&#39;)
+plt.plot(rf_y_pred, y_test, &#39;*y&#39;)
+# apply legend()
+plt.xlabel(&#39;Linear Model Predicted Y&#39;, size=20)
+plt.ylabel(&#39;True Y&#39;, size=20)
+plt.title(&#39;Model Diagnosis Plot (all models)&#39;)
+plt.legend([&#39;Perfect fit&#39;,&quot;Linear Model&quot;,&quot;KNN Model&quot;,&quot;RF Model&quot;])
+plt.show()</code></pre>
+<p><img src="modeling_files/figure-html/evaluation-9.png" width="672" /></p>
+<pre class="python"><code>print(&quot;RMSEs---------------&quot;)</code></pre>
+<pre><code>## RMSEs---------------</code></pre>
+<pre class="python"><code>print(f&quot;Lin: {lin_mse:,}&quot;)</code></pre>
+<pre><code>## Lin: 923,829,749.6999959</code></pre>
+<pre class="python"><code>print(f&quot;KNN: {knn_mse:,}&quot;)</code></pre>
+<pre><code>## KNN: 2,076,361,495.049333</code></pre>
+<pre class="python"><code>print(f&quot;RFR: {rf_mse:,}&quot;)</code></pre>
+<pre><code>## RFR: 635,719,120.6646385</code></pre>
+<pre class="python"><code>print(&quot;R^2 Scores---------------&quot;)</code></pre>
+<pre><code>## R^2 Scores---------------</code></pre>
+<pre class="python"><code>print(f&quot;Lin: {lin_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## Lin: 0.8606452942800533</code></pre>
+<pre class="python"><code>print(f&quot;KNN: {knn_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## KNN: 0.686792133285606</code></pre>
+<pre class="python"><code>print(f&quot;RFR: {rf_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## RFR: 0.904105219593185</code></pre>
 </div>
 </div>
 
