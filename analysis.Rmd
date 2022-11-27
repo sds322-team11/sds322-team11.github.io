@@ -87,9 +87,34 @@ Create some sort of analysis of variance
 
 Now we have visualized our data, we can make some hypotheses
 
-1. TODO Hypothesis 1
+1. Hypothesis 1- Houses with an overall quality rating greater than 5 have on average a higher sales price.
+```{R}
+hyp1<-data %>%
+  mutate(quality = case_when(
+    (OverallQual<=5) ~ "lower quality",
+    (OverallQual>5) ~ "higher quality"
+    ))
+t.test(SalePrice ~ quality, data = hyp1,
+        var.equal = FALSE, alternative = "greater")
+boxplot(SalePrice ~ quality, data = hyp1, xlab = "Quality Level",
+   ylab = "Sales Price ($)", main = "Comparing Sales price of different Quality houses")
+```
+The one tailed t-test reveals that the there is a significant difference between the means of higher quality houses(quality>5) and lower quality houses(Overall quality <=5). Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
 
-2. TODO Hypothesis 2
+2. Hypothesis 2- There is a significant difference in sale price of houses that have a foundation made of poured concrete vs. houses that have a foundation made of cinder blocks.
+```{R}
+data1<-data %>%
+select(SalePrice, Foundation) %>%
+  filter(Foundation=='PConc'|Foundation=='CBlock')
+AOV<-aov(SalePrice~Foundation,data=data1)
+summary(AOV)
+
+summ<-data1%>% group_by(Foundation)%>% summarise(mean_price=mean(SalePrice))
+ggplot(summ,aes(x=Foundation,y=mean_price))+geom_col()+labs(y="Mean Sales Price ($)",x="Foundation Type")+ggtitle("Mean Sales Price of Houses Varying in Foundation")
+
+```
+Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have foundations made of poured concrete and houses that have cinder blocks.
+
 
 3. TODO Hypothesis 3
 
