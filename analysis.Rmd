@@ -30,7 +30,7 @@ library(tidyverse)
 #install.packages("corrplot")
 library(corrplot)
 data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
-data <- na.omit(data)
+#data <- na.omit(data)
 head(data)
 
 ```
@@ -70,7 +70,7 @@ res <- cor(numeric_only)
 
 corrplot(res, tl.cex = .5)
 ```
-TODO : create some sort of analysis of the categorical variables
+### Bar plots of categorical variables
 
 ```{R}
 # Get only the categorical data

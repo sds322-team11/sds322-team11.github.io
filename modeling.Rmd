@@ -63,10 +63,11 @@ numeric_cols = list(df.select_dtypes(include=['int64','float64']).columns)
 
 # Remove SalePrice from the values to be normalized
 numeric_cols.remove("SalePrice")
+print(df[numeric_cols])
 # Normalize all numeric values
 df[numeric_cols] = pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
   columns=numeric_cols)
-df
+print(df[numeric_cols])
 ```
 
 
@@ -76,23 +77,30 @@ df
 
 # Create dummy variable columns for the categorical variables
 categorical_columns = df.select_dtypes(include=['object','bool']).columns
+print(df['GarageType'])
 for column in categorical_columns:
     # Print out the column names
     print(f"column {column}: ",df[column].unique())
     dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +'_' + str(x))
     df = pd.concat([df, dummies], axis=1)
     df = df.drop([column], axis=1)
-
-
+print(df.columns)
+print(df[['GarageType_Attchd', 'GarageType_Detchd']])
 
 
 ```
-### Pre-processing 3: Dropping NA columns
+### Pre-processing 3: Dropping NA rows
 ```{python droppingNAs}
-
-print(df.shape)
+rows1 = df.shape[0]
 df.dropna(inplace=True)
-print(df.shape)
+rows2 = df.shape[0]
+
+print(f"""
+Rows before: {rows1}
+Rows after: {rows2}
+-----------------------------
+Rows dropped: {rows1 - rows2}
+""")
 ```
 
 
@@ -106,7 +114,7 @@ y = df['SalePrice']
 X = df.drop('SalePrice', axis=1)
 
 # Create training and test sets. Test is .25 of data
-X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random_state=123)
+(X_train, X_test, y_train, y_test) = train_test_split(X, y,  test_size=.25, random_state=123)
 ```
 
 
@@ -135,6 +143,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random
 ```{python RFRegressor}
 from sklearn.ensemble import RandomForestRegressor
 rf_mses = []
+rf_training_mses = []
 max_depths = []
 for d in range(1,30):
     rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
@@ -142,8 +151,10 @@ for d in range(1,30):
     rf_regr.fit(X_train, y_train)
     # Make predictions on test data
     rf_y_pred = rf_regr.predict(X_test)
+    rf_y_training_pred = rf_regr.predict(X_train)
     # Report Mean Square Error
     rf_mses.append(mean_squared_error(y_test, rf_y_pred))
+    rf_training_mses.append(mean_squared_error(y_train, rf_y_training_pred))
     max_depths.append(d)
     #print(f"Mean Squared Error: {rf_mses[-1]}")
 best_n = max_depths[rf_mses.index(min(rf_mses))]
@@ -153,6 +164,11 @@ print(f"Best MSE of {rf_mse} at max_depth of {best_n}")
 import matplotlib.pyplot as plt
 plt.close()
 plt.plot(max_depths, rf_mses)
+plt.plot(max_depths, rf_training_mses)
+plt.title('MSE of different max_depth for Random Forest Regressor')
+plt.xlabel('Max Depth', size=20)
+plt.ylabel('Mean Square Error', size=20)
+plt.legend(['Testing Data MSE',"Training Data MSE"])
 plt.show()
 
 # Now that we know the best n, train again
@@ -397,11 +413,11 @@ Our model class is scikit-learn's MLP. The model works by creating and training 
 
 ### Defining the Cost Function
 
-The cost function in the neural network minimizes 
+The cost function in the neural network minimizes the squared error using the "adam" stochastic gradient-based optimizer
 
 ### Perform Optimization
 
-We optimized the performance of our model by trying different numbers of neighbors (k) for the KNN model. This helped us determine which K values would be best for our model.
+We tried to optimize the performance of the neural network by trying different hyperparameters for the model and keeping the new hyperparameters if the squared error improved.
 
 ### Check Neural Net Performance
 
@@ -424,8 +440,10 @@ print(f"Neural Network R^2 score: {mlp_regr.score(X_test, y_test)}")
 ```
 
 
-## Comparing Models (Evaluation)
-```{python evaluation}
+## Discussion
+
+### Measuring Performance
+```{python performance-eval}
 
 lin_mse = mean_squared_error(y_test, lin_y_pred)
 knn_mse = mean_squared_error(y_test, knn_y_pred)
@@ -465,4 +483,26 @@ Linear Reg: {lin_regr.rsquared}
 KNN Reg: {knn_regr.score(X_test, y_test)}
 Random Forest Reg: {rf_regr.score(X_test, y_test)}
 Neural Network Reg: {mlp_regr.score(X_test, y_test)}""")
+```
+
+
+### TODO: Findings and Interpretations
+Based on the R^2 and MSE values of the models when test data is applied to them,
+
+
+
+
+### TODO: Potential Limitations of Models
+```{python }
+
+
+```
+
+
+
+
+## TODO: Conclusion & Next Steps
+```{python }
+
+
 ```

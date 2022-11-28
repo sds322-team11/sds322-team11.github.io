@@ -396,24 +396,39 @@ numeric_cols = list(df.select_dtypes(include=[&#39;int64&#39;,&#39;float64&#39;]
 
 # Remove SalePrice from the values to be normalized
 numeric_cols.remove(&quot;SalePrice&quot;)
-# Normalize all numeric values
-df[numeric_cols] = pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
-  columns=numeric_cols)
-df</code></pre>
-<pre><code>##             Id     MSSubClass MSZoning  ...  SaleType  SaleCondition SalePrice
-## 0    -1.729139  2-STORY 1946+       RL  ...        WD         Normal    208500
-## 1    -1.726767  1-STORY 1946+       RL  ...        WD         Normal    181500
-## 2    -1.724395  2-STORY 1946+       RL  ...        WD         Normal    223500
-## 3    -1.722023  2-STORY 1945-       RL  ...        WD        Abnorml    140000
-## 4    -1.719651  2-STORY 1946+       RL  ...        WD         Normal    250000
-## ...        ...            ...      ...  ...       ...            ...       ...
-## 1451  1.722179  2-STORY 1946+       RL  ...        WD         Normal    175000
-## 1452  1.724551  1-STORY 1946+       RL  ...        WD         Normal    210000
-## 1453  1.726923  2-STORY 1945-       RL  ...        WD         Normal    266500
-## 1454  1.729295  1-STORY 1946+       RL  ...        WD         Normal    142125
-## 1455  1.731667  1-STORY 1946+       RL  ...        WD         Normal    147500
+print(df[numeric_cols])
+# Normalize all numeric values</code></pre>
+<pre><code>##         Id  LotFrontage  LotArea  LotShape  ...  PoolQC  Fence  MiscVal  YrSold
+## 0        1         65.0     8450         0  ...       0      0        0    2008
+## 1        2         80.0     9600         0  ...       0      0        0    2007
+## 2        3         68.0    11250         1  ...       0      0        0    2008
+## 3        4         60.0     9550         1  ...       0      0        0    2006
+## 4        5         84.0    14260         1  ...       0      0        0    2008
+## ...    ...          ...      ...       ...  ...     ...    ...      ...     ...
+## 1451  1456         62.0     7917         0  ...       0      0        0    2007
+## 1452  1457         85.0    13175         0  ...       0      3        0    2010
+## 1453  1458         66.0     9042         0  ...       0      4     2500    2010
+## 1454  1459         68.0     9717         0  ...       0      0        0    2010
+## 1455  1460         75.0     9937         0  ...       0      0        0    2008
 ## 
-## [1456 rows x 81 columns]</code></pre>
+## [1456 rows x 57 columns]</code></pre>
+<pre class="python"><code>df[numeric_cols] = pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
+  columns=numeric_cols)
+print(df[numeric_cols])</code></pre>
+<pre><code>##             Id  LotFrontage   LotArea  ...     Fence   MiscVal    YrSold
+## 0    -1.729139    -0.203664 -0.202770  ... -0.469568 -0.088475  0.137472
+## 1    -1.726767     0.447241 -0.086107  ... -0.469568 -0.088475 -0.615009
+## 2    -1.724395    -0.073483  0.081281  ... -0.469568 -0.088475  0.137472
+## 3    -1.722023    -0.420632 -0.091179  ... -0.469568 -0.088475 -1.367490
+## 4    -1.719651     0.620816  0.386636  ... -0.469568 -0.088475  0.137472
+## ...        ...          ...       ...  ...       ...       ...       ...
+## 1451  1.722179    -0.333845 -0.256842  ... -0.469568 -0.088475 -0.615009
+## 1452  1.724551     0.664209  0.276566  ...  2.022622 -0.088475  1.642435
+## 1453  1.726923    -0.160270 -0.142714  ...  2.853352  4.944023  1.642435
+## 1454  1.729295    -0.073483 -0.074237  ... -0.469568 -0.088475  1.642435
+## 1455  1.731667     0.230273 -0.051919  ... -0.469568 -0.088475  0.137472
+## 
+## [1456 rows x 57 columns]</code></pre>
 </div>
 <div
 id="pre-processing-2-creating-dummy-variables-for-categorircal-variables"
@@ -424,13 +439,25 @@ variables</h3>
 
 # Create dummy variable columns for the categorical variables
 categorical_columns = df.select_dtypes(include=[&#39;object&#39;,&#39;bool&#39;]).columns
-for column in categorical_columns:
+print(df[&#39;GarageType&#39;])</code></pre>
+<pre><code>## 0       Attchd
+## 1       Attchd
+## 2       Attchd
+## 3       Detchd
+## 4       Attchd
+##          ...  
+## 1451    Attchd
+## 1452    Attchd
+## 1453    Attchd
+## 1454    Attchd
+## 1455    Attchd
+## Name: GarageType, Length: 1456, dtype: object</code></pre>
+<pre class="python"><code>for column in categorical_columns:
     # Print out the column names
     print(f&quot;column {column}: &quot;,df[column].unique())
     dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +&#39;_&#39; + str(x))
     df = pd.concat([df, dummies], axis=1)
-    df = df.drop([column], axis=1)
-</code></pre>
+    df = df.drop([column], axis=1)</code></pre>
 <pre><code>## column MSSubClass:  [&#39;2-STORY 1946+&#39; &#39;1-STORY 1946+&#39; &#39;2-STORY 1945-&#39; &#39;1-1/2 STORY FIN&#39;
 ##  &#39;2 FAMILY CONVERSION&#39; &#39;1-1/2 STORY UNF&#39; &#39;DUPLEX&#39; &#39;1-STORY PUD 1946+&#39;
 ##  &#39;1-STORY 1945-&#39; &#39;SPLIT FOYER&#39; &#39;SPLIT OR MULTI-LEVEL&#39; &#39;2-STORY PUD 1946+&#39;
@@ -465,15 +492,49 @@ for column in categorical_columns:
 ##  &#39;June&#39;]
 ## column SaleType:  [&#39;WD&#39; &#39;New&#39; &#39;COD&#39; &#39;ConLD&#39; &#39;ConLI&#39; &#39;CWD&#39; &#39;ConLw&#39; &#39;Con&#39; &#39;Oth&#39;]
 ## column SaleCondition:  [&#39;Normal&#39; &#39;Abnorml&#39; &#39;Partial&#39; &#39;AdjLand&#39; &#39;Alloca&#39; &#39;Family&#39;]</code></pre>
+<pre class="python"><code>print(df.columns)</code></pre>
+<pre><code>## Index([&#39;Id&#39;, &#39;LotFrontage&#39;, &#39;LotArea&#39;, &#39;LotShape&#39;, &#39;Utilities&#39;, &#39;LandSlope&#39;,
+##        &#39;OverallQual&#39;, &#39;OverallCond&#39;, &#39;YearBuilt&#39;, &#39;YearRemodAdd&#39;,
+##        ...
+##        &#39;SaleType_ConLw&#39;, &#39;SaleType_New&#39;, &#39;SaleType_Oth&#39;, &#39;SaleType_WD&#39;,
+##        &#39;SaleCondition_Abnorml&#39;, &#39;SaleCondition_AdjLand&#39;,
+##        &#39;SaleCondition_Alloca&#39;, &#39;SaleCondition_Family&#39;, &#39;SaleCondition_Normal&#39;,
+##        &#39;SaleCondition_Partial&#39;],
+##       dtype=&#39;object&#39;, length=243)</code></pre>
+<pre class="python"><code>print(df[[&#39;GarageType_Attchd&#39;, &#39;GarageType_Detchd&#39;]])
+</code></pre>
+<pre><code>##       GarageType_Attchd  GarageType_Detchd
+## 0                     1                  0
+## 1                     1                  0
+## 2                     1                  0
+## 3                     0                  1
+## 4                     1                  0
+## ...                 ...                ...
+## 1451                  1                  0
+## 1452                  1                  0
+## 1453                  1                  0
+## 1454                  1                  0
+## 1455                  1                  0
+## 
+## [1456 rows x 2 columns]</code></pre>
 </div>
-<div id="pre-processing-3-dropping-na-columns" class="section level3">
-<h3>Pre-processing 3: Dropping NA columns</h3>
-<pre class="python"><code>
-print(df.shape)</code></pre>
-<pre><code>## (1456, 243)</code></pre>
-<pre class="python"><code>df.dropna(inplace=True)
-print(df.shape)</code></pre>
-<pre><code>## (1197, 243)</code></pre>
+<div id="pre-processing-3-dropping-na-rows" class="section level3">
+<h3>Pre-processing 3: Dropping NA rows</h3>
+<pre class="python"><code>rows1 = df.shape[0]
+df.dropna(inplace=True)
+rows2 = df.shape[0]
+
+print(f&quot;&quot;&quot;
+Rows before: {rows1}
+Rows after: {rows2}
+-----------------------------
+Rows dropped: {rows1 - rows2}
+&quot;&quot;&quot;)</code></pre>
+<pre><code>## 
+## Rows before: 1456
+## Rows after: 1197
+## -----------------------------
+## Rows dropped: 259</code></pre>
 </div>
 <div id="pre-processing-4-creating-test-and-training-datasets"
 class="section level3">
@@ -486,13 +547,14 @@ y = df[&#39;SalePrice&#39;]
 X = df.drop(&#39;SalePrice&#39;, axis=1)
 
 # Create training and test sets. Test is .25 of data
-X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random_state=123)</code></pre>
+(X_train, X_test, y_train, y_test) = train_test_split(X, y,  test_size=.25, random_state=123)</code></pre>
 </div>
 </div>
 <div id="random-forest-regressor" class="section level2">
 <h2>Random Forest Regressor</h2>
 <pre class="python"><code>from sklearn.ensemble import RandomForestRegressor
 rf_mses = []
+rf_training_mses = []
 max_depths = []
 for d in range(1,30):
     rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
@@ -500,8 +562,10 @@ for d in range(1,30):
     rf_regr.fit(X_train, y_train)
     # Make predictions on test data
     rf_y_pred = rf_regr.predict(X_test)
+    rf_y_training_pred = rf_regr.predict(X_train)
     # Report Mean Square Error
     rf_mses.append(mean_squared_error(y_test, rf_y_pred))
+    rf_training_mses.append(mean_squared_error(y_train, rf_y_training_pred))
     max_depths.append(d)
     #print(f&quot;Mean Squared Error: {rf_mses[-1]}&quot;)</code></pre>
 <pre><code>## RandomForestRegressor(max_depth=1, random_state=0)
@@ -540,6 +604,11 @@ print(f&quot;Best MSE of {rf_mse} at max_depth of {best_n}&quot;)</code></pre>
 <pre class="python"><code>import matplotlib.pyplot as plt
 plt.close()
 plt.plot(max_depths, rf_mses)
+plt.plot(max_depths, rf_training_mses)
+plt.title(&#39;MSE of different max_depth for Random Forest Regressor&#39;)
+plt.xlabel(&#39;Max Depth&#39;, size=20)
+plt.ylabel(&#39;Mean Square Error&#39;, size=20)
+plt.legend([&#39;Testing Data MSE&#39;,&quot;Training Data MSE&quot;])
 plt.show()
 
 # Now that we know the best n, train again</code></pre>
@@ -779,13 +848,14 @@ Here</a></p>
 </div>
 <div id="defining-the-cost-function-2" class="section level3">
 <h3>Defining the Cost Function</h3>
-<p>The cost function in the neural network minimizes</p>
+<p>The cost function in the neural network minimizes the squared error
+using the “adam” stochastic gradient-based optimizer</p>
 </div>
 <div id="perform-optimization-2" class="section level3">
 <h3>Perform Optimization</h3>
-<p>We optimized the performance of our model by trying different numbers
-of neighbors (k) for the KNN model. This helped us determine which K
-values would be best for our model.</p>
+<p>We tried to optimize the performance of the neural network by trying
+different hyperparameters for the model and keeping the new
+hyperparameters if the squared error improved.</p>
 </div>
 <div id="check-neural-net-performance" class="section level3">
 <h3>Check Neural Net Performance</h3>
@@ -808,8 +878,10 @@ plt.show()
 <pre><code>## Neural Network R^2 score: 0.9190756873516708</code></pre>
 </div>
 </div>
-<div id="comparing-models-evaluation" class="section level2">
-<h2>Comparing Models (Evaluation)</h2>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+<div id="measuring-performance" class="section level3">
+<h3>Measuring Performance</h3>
 <pre class="python"><code>
 lin_mse = mean_squared_error(y_test, lin_y_pred)
 knn_mse = mean_squared_error(y_test, knn_y_pred)
@@ -839,7 +911,7 @@ plt.title(&#39;Model Diagnosis Plot (all models)&#39;)
 
 plt.legend([&#39;Perfect fit line&#39;,&quot;Linear Model&quot;,f&quot;KNN Model k={best_k}&quot;,f&quot;RF Model md={best_n}&quot;, &quot;Neural Network Model&quot;])
 plt.show()</code></pre>
-<p><img src="modeling_files/figure-html/evaluation-13.png" width="672" /></p>
+<p><img src="modeling_files/figure-html/performance-eval-13.png" width="672" /></p>
 <pre class="python"><code>print(f&quot;&quot;&quot;
 MSEs (Mean Square Errors)---------------
 Linear Reg:        {lin_mse:,}
@@ -862,6 +934,18 @@ Neural Network Reg: {mlp_regr.score(X_test, y_test)}&quot;&quot;&quot;)</code></
 ## KNN Reg: 0.8829107281914653
 ## Random Forest Reg: 0.9053810176351551
 ## Neural Network Reg: 0.9190756873516708</code></pre>
+</div>
+<div id="todo-findings-and-interpretations" class="section level3">
+<h3>TODO: Findings and Interpretations</h3>
+<p>Based on the R^2 and MSE values of the models when test data is
+applied to them,</p>
+</div>
+<div id="todo-potential-limitations-of-models" class="section level3">
+<h3>TODO: Potential Limitations of Models</h3>
+</div>
+</div>
+<div id="todo-conclusion-next-steps" class="section level2">
+<h2>TODO: Conclusion &amp; Next Steps</h2>
 </div>
 
 
