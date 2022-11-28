@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -222,6 +225,75 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
 
 </head>
 
@@ -229,6 +301,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -279,10 +361,9 @@ model that predicts the sales price of a house given the variables
 necessary, which will be completed under the <a
 href="/modeling">Modeling Page</a></p>
 <p>To begin our analysis of the data we will create correlation
-matrices, visualize individual variables, and look at regression outputs
-to see what variables contribute the most to predicting sales price.</p>
-<p>In order to complete the model training step, we will follow the
-following steps from class: 1. Choose a model 2. cost 3. a 4. a</p>
+matrices, visualize individual variables, and look at ANOVA outputs to
+see which variables appear to contribute the most to predicting sales
+price.</p>
 </div>
 <div id="importing-libraries-loading-data" class="section level2">
 <h2>Importing Libraries + Loading Data</h2>
@@ -333,7 +414,7 @@ class="section level3">
     plot.caption = element_text(face = &quot;italic&quot;)
   )</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="analysis_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="analysis_files/figure-html/sale_price_histogram-1.png" width="672" /></p>
 <pre class="r"><code>head(data)</code></pre>
 <pre><code>## # A tibble: 6 × 81
 ##      Id MSSubClass  MSZon…¹ LotFr…² LotArea Street Alley LotSh…³ LandC…⁴ Utili…⁵
@@ -351,15 +432,15 @@ class="section level3">
 ## #   Exterior2nd &lt;chr&gt;, MasVnrType &lt;chr&gt;, MasVnrArea &lt;dbl&gt;, ExterQual &lt;dbl&gt;,
 ## #   ExterCond &lt;dbl&gt;, Foundation &lt;chr&gt;, BsmtQual &lt;dbl&gt;, BsmtCond &lt;dbl&gt;,
 ## #   BsmtExposure &lt;dbl&gt;, BsmtFinType1 &lt;dbl&gt;, BsmtFinSF1 &lt;dbl&gt;, …</code></pre>
-<p>As you can see, the sales price of the homes is slightly
-right-skewed</p>
+<p>As you can see, the sales price of the homes is slightly right-skewed
+### Correlation Plot of numeric variables</p>
 <pre class="r"><code># Get only the numeric data
 numeric_only &lt;- data %&gt;% select_if(is.numeric)
-
 res &lt;- cor(numeric_only)
+#res %&gt;% pivot_longer(c(0,10), names_to = &quot;var2&quot;)
 
 corrplot(res, tl.cex = .5)</code></pre>
-<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+<p><img src="analysis_files/figure-html/correlation_plot-1.png" width="672" />
 TODO : create some sort of analysis of the categorical variables</p>
 <pre class="r"><code># Get only the categorical data
 categorical &lt;- data %&gt;% select_if(negate(is.numeric))
@@ -394,20 +475,123 @@ categorical %&gt;% glimpse()</code></pre>
 <h2>TODO: ANOVA</h2>
 <p>Create some sort of analysis of variance</p>
 </div>
-<div id="todo-hypotheses" class="section level2">
-<h2>TODO: Hypotheses</h2>
+</div>
+<div id="hypotheses" class="section level1">
+<h1>Hypotheses</h1>
 <p>Now we have visualized our data, we can make some hypotheses</p>
-<ol style="list-style-type: decimal">
-<li><p>Hypothesis 1</p></li>
-<li><p>Hypothesis 2</p></li>
-<li><p>Hypothesis 3</p></li>
-<li><p>Hypothesis 4</p></li>
-</ol>
+<div id="hypothesis-1" class="section level2">
+<h2>Hypothesis 1</h2>
+<p>Houses with an overall quality rating greater than 5 have on average
+a higher sales price.</p>
+<pre class="r"><code>hyp1&lt;-data %&gt;%
+  mutate(quality = case_when(
+    (OverallQual&lt;=5) ~ &quot;lower quality&quot;,
+    (OverallQual&gt;5) ~ &quot;higher quality&quot;
+    ))
+t.test(SalePrice ~ quality, data = hyp1,
+        var.equal = FALSE, alternative = &quot;greater&quot;)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  SalePrice by quality
+## t = 29.964, df = 1318.3, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means is greater than 0
+## 95 percent confidence interval:
+##  81718.73      Inf
+## sample estimates:
+## mean in group higher quality  mean in group lower quality 
+##                     212101.9                     125633.2</code></pre>
+<pre class="r"><code>boxplot(SalePrice ~ quality, data = hyp1, xlab = &quot;Quality Level&quot;,
+   ylab = &quot;Sales Price ($)&quot;, main = &quot;Comparing Sales price of different Quality houses&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/hypothesis-1-1.png" width="672" />
+The one tailed t-test reveals that the there is a significant difference
+between the means of higher quality houses(quality&gt;5) and lower
+quality houses(Overall quality &lt;=5). Since the p-value is less than
+0.05, we can reject the null hypothesis and accept the alternative that
+higher quality houses have a higher sales price.</p>
+</div>
+<div id="hypothesis-2" class="section level2">
+<h2>Hypothesis 2</h2>
+<p>There is a significant difference in sale price of houses that have a
+foundation made of poured concrete vs. houses that have a foundation
+made of cinder blocks.</p>
+<pre class="r"><code>data1&lt;-data %&gt;%
+select(SalePrice, Foundation) %&gt;%
+  filter(Foundation==&#39;PConc&#39;|Foundation==&#39;CBlock&#39;)
+AOV&lt;-aov(SalePrice~Foundation,data=data1)
+summary(AOV)</code></pre>
+<pre><code>##               Df    Sum Sq   Mean Sq F value Pr(&gt;F)    
+## Foundation     1 1.746e+12 1.746e+12   384.3 &lt;2e-16 ***
+## Residuals   1275 5.793e+12 4.543e+09                   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summ&lt;-data1%&gt;% group_by(Foundation)%&gt;% summarise(mean_price=mean(SalePrice))
+ggplot(summ,aes(x=Foundation,y=mean_price))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Foundation Type&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Foundation&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/hypothesis2-1.png" width="672" />
+Based on the ANOVA test, we can conclude that there is a significant
+difference in sales price between houses that have foundations made of
+poured concrete and houses that have cinder blocks.</p>
+</div>
+<div id="hypothesis-3" class="section level2">
+<h2>Hypothesis 3</h2>
+<p>There is a significant difference in sale price of houses that have
+finished garages (3) vs those houses that have unfinished garages
+(1).</p>
+<pre class="r"><code>data2&lt;-data %&gt;%
+select(SalePrice, GarageFinish) %&gt;%
+  filter(GarageFinish==&#39;1&#39;|GarageFinish==&#39;3&#39;)
+AOV1&lt;-aov(SalePrice~GarageFinish,data=data2)
+summary(AOV1)</code></pre>
+<pre><code>##               Df    Sum Sq   Mean Sq F value Pr(&gt;F)    
+## GarageFinish   1 2.009e+12 2.009e+12   468.9 &lt;2e-16 ***
+## Residuals    951 4.074e+12 4.284e+09                   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summ&lt;-data2%&gt;% group_by(GarageFinish)%&gt;% summarise(mean_price=mean(SalePrice))
+ggplot(summ,aes(x=GarageFinish,y=mean_price))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Garage Finish&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Garage&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/hypothesis3-1.png" width="672" />
+Based on the ANOVA test, we can conclude that there is a significant
+difference in sales price between houses that have unfinished garages
+and houses that have finished garages.</p>
+</div>
+<div id="hypothesis-4" class="section level2">
+<h2>Hypothesis 4</h2>
+<p>Houses with a garage that can hold 3 or more cars have on average a
+higher sales price.</p>
+<pre class="r"><code>hyp4&lt;-data %&gt;%
+  mutate(garagecarsn = case_when(
+    (GarageCars&lt;3) ~ &quot;less than 3 cars&quot;,
+    (GarageCars&gt;=3) ~ &quot;3 or more cars&quot;
+    ))
+t.test(SalePrice ~ garagecarsn, data = hyp4,
+        var.equal = FALSE, alternative = &quot;greater&quot;)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  SalePrice by garagecarsn
+## t = 19.022, df = 198.47, p-value &lt; 2.2e-16
+## alternative hypothesis: true difference in means is greater than 0
+## 95 percent confidence interval:
+##  127580.6      Inf
+## sample estimates:
+##   mean in group 3 or more cars mean in group less than 3 cars 
+##                       302309.7                       162590.4</code></pre>
+<pre class="r"><code>boxplot(SalePrice ~ garagecarsn, data = hyp4, xlab = &quot;Car Capacity&quot;,
+   ylab = &quot;Sales Price ($)&quot;, main = &quot;Comparing Sales price with Different Garage capacity&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/hypothesis4-1.png" width="672" /></p>
+<p>The one tailed t-test reveals that the there is a significant
+difference between the means of houses that have garages of 3 or more
+car capacity and houses that have garages with less than 3 car capacity.
+Since the p-value is less than 0.05, we can reject the null hypothesis
+and accept the alternative that higher quality houses have a higher
+sales price.</p>
 </div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -440,6 +624,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

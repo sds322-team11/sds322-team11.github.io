@@ -31,9 +31,6 @@ We used an open-source dataset found on Kaggle that has already been cleaned. Th
 The Ames Housing dataset was compiled by Dean De Cock for use in data science education.
 link: http://www.amstat.org/publications/jse/v19n3/decock.pdf 
 
-##### You can find our analysis [here](/analysis)!
-
-
 
 ## Other sources
 

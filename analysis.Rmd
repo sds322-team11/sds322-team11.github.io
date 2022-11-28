@@ -4,9 +4,12 @@ pagetitle: 'Analysis & Hypotheses'
 output: 
   html_document: 
     css: "styles.css"
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
-```{r, include=FALSE}
+```{r htmltools_code, include=FALSE}
 htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 
 ```
@@ -14,18 +17,11 @@ htmltools::tagList(rmarkdown::html_dependency_font_awesome())
 
 We want to analyze the housing sales prices to analyze which variables influence the sales price the most. We also want to train a model that predicts the sales price of a house given the variables necessary, which will be completed under the [Modeling Page](/modeling)
 
-To begin our analysis of the data we will create correlation matrices, visualize individual variables, and look at regression outputs to see what variables contribute the most to predicting sales price.
-
-In order to complete the model training step, we will follow the following steps from class:
-1. Choose a model
-2. cost
-3. a
-4. a
-
+To begin our analysis of the data we will create correlation matrices, visualize individual variables, and look at ANOVA outputs to see which variables appear to contribute the most to predicting sales price.
 
 ## Importing Libraries + Loading Data
 
-```{R, message=FALSE}
+```{R imports, message=FALSE}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -42,7 +38,7 @@ head(data)
 
 ### Histogram of SalePrice (dependent variable):
 
-```{R}
+```{R sale_price_histogram}
 
 
 data %>% 
@@ -64,13 +60,14 @@ head(data)
 ```
 
 As you can see, the sales price of the homes is slightly right-skewed
-
-```{R}
+### Correlation Plot of numeric variables
+```{R correlation_plot}
 # Get only the numeric data
 numeric_only <- data %>% select_if(is.numeric)
 res <- cor(numeric_only)
-res %>% pivot_longer(c(0,10), names_to = "var2")
-#corrplot(res, tl.cex = .5)
+#res %>% pivot_longer(c(0,10), names_to = "var2")
+
+corrplot(res, tl.cex = .5)
 ```
 TODO : create some sort of analysis of the categorical variables
 
@@ -83,12 +80,13 @@ categorical %>% glimpse()
 ## TODO: ANOVA 
 Create some sort of analysis of variance
 
-## TODO: Hypotheses
+# Hypotheses
 
 Now we have visualized our data, we can make some hypotheses
 
-1. Hypothesis 1- Houses with an overall quality rating greater than 5 have on average a higher sales price.
-```{R}
+##  Hypothesis 1 
+Houses with an overall quality rating greater than 5 have on average a higher sales price.
+```{R hypothesis-1}
 hyp1<-data %>%
   mutate(quality = case_when(
     (OverallQual<=5) ~ "lower quality",
@@ -101,8 +99,9 @@ boxplot(SalePrice ~ quality, data = hyp1, xlab = "Quality Level",
 ```
 The one tailed t-test reveals that the there is a significant difference between the means of higher quality houses(quality>5) and lower quality houses(Overall quality <=5). Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
 
-2. Hypothesis 2- There is a significant difference in sale price of houses that have a foundation made of poured concrete vs. houses that have a foundation made of cinder blocks.
-```{R}
+## Hypothesis 2
+There is a significant difference in sale price of houses that have a foundation made of poured concrete vs. houses that have a foundation made of cinder blocks.
+```{R hypothesis2}
 data1<-data %>%
 select(SalePrice, Foundation) %>%
   filter(Foundation=='PConc'|Foundation=='CBlock')
@@ -115,8 +114,9 @@ ggplot(summ,aes(x=Foundation,y=mean_price))+geom_col()+labs(y="Mean Sales Price 
 ```
 Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have foundations made of poured concrete and houses that have cinder blocks.
 
-3. Hypothesis 3-There is a significant difference in sale price of houses that have finished garages (3) vs those houses that have unfinished garages (1).
-```{R}
+## Hypothesis 3
+There is a significant difference in sale price of houses that have finished garages (3) vs those houses that have unfinished garages (1).
+```{R hypothesis3}
 data2<-data %>%
 select(SalePrice, GarageFinish) %>%
   filter(GarageFinish=='1'|GarageFinish=='3')
@@ -129,8 +129,9 @@ ggplot(summ,aes(x=GarageFinish,y=mean_price))+geom_col()+labs(y="Mean Sales Pric
 ```
 Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have unfinished garages and houses that have finished garages.
 
-4. Hypothesis 4- Houses with a garage that can hold 3 or more cars have on average a higher sales price.
-```{R}
+## Hypothesis 4
+Houses with a garage that can hold 3 or more cars have on average a higher sales price.
+```{R hypothesis4}
 hyp4<-data %>%
   mutate(garagecarsn = case_when(
     (GarageCars<3) ~ "less than 3 cars",
@@ -141,6 +142,7 @@ t.test(SalePrice ~ garagecarsn, data = hyp4,
 boxplot(SalePrice ~ garagecarsn, data = hyp4, xlab = "Car Capacity",
    ylab = "Sales Price ($)", main = "Comparing Sales price with Different Garage capacity")
 ```
+
 The one tailed t-test reveals that the there is a significant difference between the means of houses that have garages of 3 or more car capacity and houses that have garages with less than 3 car capacity. Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
 
 

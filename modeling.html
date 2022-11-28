@@ -29,6 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -222,6 +225,75 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
 
 </head>
 
@@ -229,6 +301,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -298,9 +380,13 @@ from sklearn.compose import make_column_transformer
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import matplotlib
+import numpy as np
 matplotlib.use(&#39;Agg&#39;)</code></pre>
-<div id="normalizing-data" class="section level3">
-<h3>Normalizing data</h3>
+</div>
+<div id="data-preparation" class="section level2">
+<h2>Data Preparation</h2>
+<div id="pre-processing-1-normalizing-data" class="section level3">
+<h3>Pre-processing 1: Normalizing data</h3>
 <pre class="python"><code>df = pd.read_csv(&#39;clean_train.csv&#39;)
 
 # create a scaler object
@@ -309,43 +395,31 @@ std_scaler = StandardScaler()
 numeric_cols = list(df.select_dtypes(include=[&#39;int64&#39;,&#39;float64&#39;]).columns)
 
 # Remove SalePrice from the values to be normalized
-#numeric_cols.remove(&quot;SalePrice&quot;)
+numeric_cols.remove(&quot;SalePrice&quot;)
 # Normalize all numeric values
-pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
-  columns=numeric_cols)</code></pre>
-<pre><code>##             Id  LotFrontage   LotArea  ...   MiscVal    YrSold  SalePrice
-## 0    -1.729139    -0.203664 -0.202770  ... -0.088475  0.137472   0.369749
-## 1    -1.726767     0.447241 -0.086107  ... -0.088475 -0.615009   0.017592
-## 2    -1.724395    -0.073483  0.081281  ... -0.088475  0.137472   0.565392
-## 3    -1.722023    -0.420632 -0.091179  ... -0.088475 -1.367490  -0.523687
-## 4    -1.719651     0.620816  0.386636  ... -0.088475  0.137472   0.911028
-## ...        ...          ...       ...  ...       ...       ...        ...
-## 1451  1.722179    -0.333845 -0.256842  ... -0.088475 -0.615009  -0.067187
-## 1452  1.724551     0.664209  0.276566  ... -0.088475  1.642435   0.389314
-## 1453  1.726923    -0.160270 -0.142714  ...  4.944023  1.642435   1.126236
-## 1454  1.729295    -0.073483 -0.074237  ... -0.088475  1.642435  -0.495971
-## 1455  1.731667     0.230273 -0.051919  ... -0.088475  0.137472  -0.425866
-## 
-## [1456 rows x 58 columns]</code></pre>
-<pre class="python"><code>df</code></pre>
-<pre><code>##         Id     MSSubClass MSZoning  ...  SaleType  SaleCondition SalePrice
-## 0        1  2-STORY 1946+       RL  ...        WD         Normal    208500
-## 1        2  1-STORY 1946+       RL  ...        WD         Normal    181500
-## 2        3  2-STORY 1946+       RL  ...        WD         Normal    223500
-## 3        4  2-STORY 1945-       RL  ...        WD        Abnorml    140000
-## 4        5  2-STORY 1946+       RL  ...        WD         Normal    250000
-## ...    ...            ...      ...  ...       ...            ...       ...
-## 1451  1456  2-STORY 1946+       RL  ...        WD         Normal    175000
-## 1452  1457  1-STORY 1946+       RL  ...        WD         Normal    210000
-## 1453  1458  2-STORY 1945-       RL  ...        WD         Normal    266500
-## 1454  1459  1-STORY 1946+       RL  ...        WD         Normal    142125
-## 1455  1460  1-STORY 1946+       RL  ...        WD         Normal    147500
+df[numeric_cols] = pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
+  columns=numeric_cols)
+df</code></pre>
+<pre><code>##             Id     MSSubClass MSZoning  ...  SaleType  SaleCondition SalePrice
+## 0    -1.729139  2-STORY 1946+       RL  ...        WD         Normal    208500
+## 1    -1.726767  1-STORY 1946+       RL  ...        WD         Normal    181500
+## 2    -1.724395  2-STORY 1946+       RL  ...        WD         Normal    223500
+## 3    -1.722023  2-STORY 1945-       RL  ...        WD        Abnorml    140000
+## 4    -1.719651  2-STORY 1946+       RL  ...        WD         Normal    250000
+## ...        ...            ...      ...  ...       ...            ...       ...
+## 1451  1.722179  2-STORY 1946+       RL  ...        WD         Normal    175000
+## 1452  1.724551  1-STORY 1946+       RL  ...        WD         Normal    210000
+## 1453  1.726923  2-STORY 1945-       RL  ...        WD         Normal    266500
+## 1454  1.729295  1-STORY 1946+       RL  ...        WD         Normal    142125
+## 1455  1.731667  1-STORY 1946+       RL  ...        WD         Normal    147500
 ## 
 ## [1456 rows x 81 columns]</code></pre>
 </div>
-</div>
-<div id="pre-processingcleaning-data" class="section level2">
-<h2>Pre-processing/cleaning data</h2>
+<div
+id="pre-processing-2-creating-dummy-variables-for-categorircal-variables"
+class="section level3">
+<h3>Pre-processing 2: Creating Dummy Variables for categorircal
+variables</h3>
 <pre class="python"><code>
 
 # Create dummy variable columns for the categorical variables
@@ -356,7 +430,7 @@ for column in categorical_columns:
     dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +&#39;_&#39; + str(x))
     df = pd.concat([df, dummies], axis=1)
     df = df.drop([column], axis=1)
-# Drop NA columns</code></pre>
+</code></pre>
 <pre><code>## column MSSubClass:  [&#39;2-STORY 1946+&#39; &#39;1-STORY 1946+&#39; &#39;2-STORY 1945-&#39; &#39;1-1/2 STORY FIN&#39;
 ##  &#39;2 FAMILY CONVERSION&#39; &#39;1-1/2 STORY UNF&#39; &#39;DUPLEX&#39; &#39;1-STORY PUD 1946+&#39;
 ##  &#39;1-STORY 1945-&#39; &#39;SPLIT FOYER&#39; &#39;SPLIT OR MULTI-LEVEL&#39; &#39;2-STORY PUD 1946+&#39;
@@ -391,17 +465,19 @@ for column in categorical_columns:
 ##  &#39;June&#39;]
 ## column SaleType:  [&#39;WD&#39; &#39;New&#39; &#39;COD&#39; &#39;ConLD&#39; &#39;ConLI&#39; &#39;CWD&#39; &#39;ConLw&#39; &#39;Con&#39; &#39;Oth&#39;]
 ## column SaleCondition:  [&#39;Normal&#39; &#39;Abnorml&#39; &#39;Partial&#39; &#39;AdjLand&#39; &#39;Alloca&#39; &#39;Family&#39;]</code></pre>
-<pre class="python"><code>print(df.shape)</code></pre>
+</div>
+<div id="pre-processing-3-dropping-na-columns" class="section level3">
+<h3>Pre-processing 3: Dropping NA columns</h3>
+<pre class="python"><code>
+print(df.shape)</code></pre>
 <pre><code>## (1456, 243)</code></pre>
 <pre class="python"><code>df.dropna(inplace=True)
-print(df.shape)
-# Normalize the numerical data with standard scaler
-# numerical_columns = df.select_dtypes(include=[&#39;int64&#39;,&#39;float64&#39;]).columns
-# scaler = StandardScaler()
-</code></pre>
+print(df.shape)</code></pre>
 <pre><code>## (1197, 243)</code></pre>
-<div id="create-training-and-testing-sets" class="section level3">
-<h3>Create training and testing sets</h3>
+</div>
+<div id="pre-processing-4-creating-test-and-training-datasets"
+class="section level3">
+<h3>Pre-processing 4: Creating test and training datasets</h3>
 <pre class="python"><code>
 # Create dataframes for independent and dependent variables
 # Dependent variable
@@ -412,12 +488,13 @@ X = df.drop(&#39;SalePrice&#39;, axis=1)
 # Create training and test sets. Test is .25 of data
 X_train, X_test, y_train, y_test = train_test_split(X, y,  test_size=.25, random_state=123)</code></pre>
 </div>
-<div id="random-forest-regressor" class="section level3">
-<h3>Random Forest Regressor</h3>
+</div>
+<div id="random-forest-regressor" class="section level2">
+<h2>Random Forest Regressor</h2>
 <pre class="python"><code>from sklearn.ensemble import RandomForestRegressor
 rf_mses = []
 max_depths = []
-for d in range(1,15):
+for d in range(1,30):
     rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
     # Fit the data to the model
     rf_regr.fit(X_train, y_train)
@@ -440,11 +517,26 @@ for d in range(1,15):
 ## RandomForestRegressor(max_depth=11, random_state=0)
 ## RandomForestRegressor(max_depth=12, random_state=0)
 ## RandomForestRegressor(max_depth=13, random_state=0)
-## RandomForestRegressor(max_depth=14, random_state=0)</code></pre>
+## RandomForestRegressor(max_depth=14, random_state=0)
+## RandomForestRegressor(max_depth=15, random_state=0)
+## RandomForestRegressor(max_depth=16, random_state=0)
+## RandomForestRegressor(max_depth=17, random_state=0)
+## RandomForestRegressor(max_depth=18, random_state=0)
+## RandomForestRegressor(max_depth=19, random_state=0)
+## RandomForestRegressor(max_depth=20, random_state=0)
+## RandomForestRegressor(max_depth=21, random_state=0)
+## RandomForestRegressor(max_depth=22, random_state=0)
+## RandomForestRegressor(max_depth=23, random_state=0)
+## RandomForestRegressor(max_depth=24, random_state=0)
+## RandomForestRegressor(max_depth=25, random_state=0)
+## RandomForestRegressor(max_depth=26, random_state=0)
+## RandomForestRegressor(max_depth=27, random_state=0)
+## RandomForestRegressor(max_depth=28, random_state=0)
+## RandomForestRegressor(max_depth=29, random_state=0)</code></pre>
 <pre class="python"><code>best_n = max_depths[rf_mses.index(min(rf_mses))]
 rf_mse = min(rf_mses)
 print(f&quot;Best MSE of {rf_mse} at max_depth of {best_n}&quot;)</code></pre>
-<pre><code>## Best MSE of 635719120.6646385 at max_depth of 9</code></pre>
+<pre><code>## Best MSE of 627261421.4452841 at max_depth of 20</code></pre>
 <pre class="python"><code>import matplotlib.pyplot as plt
 plt.close()
 plt.plot(max_depths, rf_mses)
@@ -456,51 +548,100 @@ plt.show()
 # Fit the data to the model
 rf_regr.fit(X_train, y_train)
 # Make predictions on test data</code></pre>
-<pre><code>## RandomForestRegressor(max_depth=9, random_state=0)</code></pre>
-<pre class="python"><code>rf_y_pred = rf_regr.predict(X_test)
-# Report Mean Square Error</code></pre>
+<pre><code>## RandomForestRegressor(max_depth=20, random_state=0)</code></pre>
+<pre class="python"><code>rf_y_pred = rf_regr.predict(X_test)</code></pre>
+<div id="defining-your-model-class" class="section level3">
+<h3>Defining your Model Class</h3>
+<p>Our model class is scikit-learn’s random forest regressor. The model
+class works by building decision trees on different sub-samples of the
+data and uses averaging to improve the predictive accuracy. More
+information abou the model can be found
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">
+Here</a></p>
+</div>
+<div id="defining-the-cost-function" class="section level3">
+<h3>Defining the Cost Function</h3>
+<p>The cost function used for our random forest regressor is mean
+squared error. We chose this because it only slightly penalizes the
+model for being slightly off, but greatly penalizes the model when it is
+off a greater amount.</p>
+</div>
+<div id="perform-optimization" class="section level3">
+<h3>Perform Optimization</h3>
+<p>We optimized the performance of our model by trying different
+max-depths for the random forest model. This helped us avoid over
+fitting. We went with a model that would minimize the mean square error
+of the model</p>
+</div>
+<div id="check-rf-performance" class="section level3">
+<h3>Check RF Performance</h3>
+<p>The performance of the model is checked below:</p>
 <pre class="python"><code>rf_mse = mean_squared_error(y_test, rf_y_pred)
 print(f&quot;Mean Squared Error: {rf_mse}&quot;)</code></pre>
-<pre><code>## Mean Squared Error: 635719120.6646385</code></pre>
+<pre><code>## Mean Squared Error: 627261421.4452841</code></pre>
 <pre class="python"><code>max_val = max(max(y_test),max(rf_y_pred))
 plt.close()
 plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
-plt.plot(rf_y_pred, y_test, &#39;*r&#39;)
-plt.xlabel(&#39;Random Forest Regressor Predicted Y&#39;, size=20)
-plt.ylabel(&#39;True Y&#39;, size=20)
-plt.title(f&#39;Random Forest Regressor Diagnosis Plot (neighbors={best_n})&#39;)
-plt.show()</code></pre>
+plt.plot(rf_y_pred, y_test, &#39;.y&#39;)
+plt.xlabel(&#39;Random Forest Regressor Predicted Sales Price ($)&#39;, size=20)
+plt.ylabel(&#39;True Sales Price ($)&#39;, size=20)
+plt.title(f&#39;Random Forest Regressor Diagnosis Plot (max_depth={best_n})&#39;)
+plt.show()
+# Report Mean Square Error</code></pre>
 <p><img src="modeling_files/figure-html/RFRegressor-Eval-3.png" width="672" /></p>
+<pre class="python"><code>print(f&quot;Random Forest RMSE: {rf_mse:,}&quot;)</code></pre>
+<pre><code>## Random Forest RMSE: 627,261,421.4452841</code></pre>
+<pre class="python"><code>print(f&quot;Random Forest R^2: {rf_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## Random Forest R^2: 0.9053810176351551</code></pre>
 </div>
-<div id="linear-regression" class="section level3">
-<h3>Linear Regression</h3>
+</div>
+<div id="linear-regression" class="section level2">
+<h2>Linear Regression</h2>
 <pre class="python"><code># Train a linear model
-lin_regr = LinearRegression()
+lin_regr = LinearRegression(fit_intercept=False)
 lin_regr.fit(X_train, y_train)
 # Make predictions on test data</code></pre>
-<pre><code>## LinearRegression()</code></pre>
+<pre><code>## LinearRegression(fit_intercept=False)</code></pre>
 <pre class="python"><code>lin_y_pred = lin_regr.predict(X_test)
-# Report Mean Square Error
+lin_mse = mean_squared_error(y_test, lin_y_pred)</code></pre>
+<pre class="python"><code>import statsmodels.api as sm
+from scipy import stats
+
+X2 = sm.add_constant(X_train)
+est = sm.OLS(y_train, X2)
+lin_regr = est.fit()
+#print(lin_regr.summary())
+lin_y_pred = lin_regr.predict(X_test)
 lin_mse = mean_squared_error(y_test, lin_y_pred)
-lin_mse</code></pre>
-<pre><code>## 923829749.6999959</code></pre>
+print(lin_mse)</code></pre>
+<pre><code>## 915059405.4317662</code></pre>
+<pre class="python"><code>print(lin_regr.rsquared)</code></pre>
+<pre><code>## 0.9361021808498309</code></pre>
 <pre class="python"><code>max_val = max(max(y_test),max(lin_y_pred))
 plt.close()
 plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
-plt.plot(lin_y_pred, y_test, &#39;*r&#39;)
-plt.xlabel(&#39;Linear Model Predicted Y&#39;, size=20)
-plt.ylabel(&#39;True Y&#39;, size=20)
+plt.plot(lin_y_pred, y_test, &#39;.r&#39;)
+plt.xlabel(&#39;Linear Model Predicted Sales Price ($)&#39;, size=20)
+plt.ylabel(&#39;True Sales Price ($)&#39;, size=20)
 plt.title(&#39;Linear Model Diagnosis Plot&#39;)
+plt.legend([&#39;Perfect fit line&#39;,&quot;Linear Model&quot;])
 plt.show()</code></pre>
-<p><img src="modeling_files/figure-html/LinearRegressor-5.png" width="672" /></p>
+<p><img src="modeling_files/figure-html/Linear-Eval-5.png" width="672" /></p>
+<pre class="python"><code>print(f&quot;Linear MSE: {lin_mse:,}&quot;)</code></pre>
+<pre><code>## Linear MSE: 915,059,405.4317662</code></pre>
+<pre class="python"><code>print(f&quot;Linear Reg R^2: {lin_regr.rsquared}&quot;)</code></pre>
+<pre><code>## Linear Reg R^2: 0.9361021808498309</code></pre>
 </div>
-<div id="knn-regressor" class="section level3">
-<h3>KNN Regressor</h3>
+<div id="knn-regressor" class="section level2">
+<h2>KNN Regressor</h2>
 <pre class="python"><code>from sklearn.neighbors import KNeighborsRegressor
 knn_mses = []
 nums_neighbors = []
-for k in range(1,20):
-    knn_regr = KNeighborsRegressor(n_neighbors=k)
+for k in range(1,30):
+    knn_regr = KNeighborsRegressor(
+      n_neighbors=k,
+      weights=&quot;distance&quot;
+    )
     # Fit the data to the model
     knn_regr.fit(X_train, y_train)
     # Make predictions on test data
@@ -509,101 +650,224 @@ for k in range(1,20):
     knn_mses.append(mean_squared_error(y_test, knn_y_pred))
     nums_neighbors.append(k)
     #print(f&quot;Mean Squared Error: {knn_mses[-1]}&quot;)</code></pre>
-<pre><code>## KNeighborsRegressor(n_neighbors=1)
-## KNeighborsRegressor(n_neighbors=2)
-## KNeighborsRegressor(n_neighbors=3)
-## KNeighborsRegressor(n_neighbors=4)
-## KNeighborsRegressor()
-## KNeighborsRegressor(n_neighbors=6)
-## KNeighborsRegressor(n_neighbors=7)
-## KNeighborsRegressor(n_neighbors=8)
-## KNeighborsRegressor(n_neighbors=9)
-## KNeighborsRegressor(n_neighbors=10)
-## KNeighborsRegressor(n_neighbors=11)
-## KNeighborsRegressor(n_neighbors=12)
-## KNeighborsRegressor(n_neighbors=13)
-## KNeighborsRegressor(n_neighbors=14)
-## KNeighborsRegressor(n_neighbors=15)
-## KNeighborsRegressor(n_neighbors=16)
-## KNeighborsRegressor(n_neighbors=17)
-## KNeighborsRegressor(n_neighbors=18)
-## KNeighborsRegressor(n_neighbors=19)</code></pre>
+<pre><code>## KNeighborsRegressor(n_neighbors=1, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=2, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=3, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=4, weights=&#39;distance&#39;)
+## KNeighborsRegressor(weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=6, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=7, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=8, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=9, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=10, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=11, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=12, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=13, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=14, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=15, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=16, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=17, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=18, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=19, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=20, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=21, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=22, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=23, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=24, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=25, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=26, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=27, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=28, weights=&#39;distance&#39;)
+## KNeighborsRegressor(n_neighbors=29, weights=&#39;distance&#39;)</code></pre>
 <pre class="python"><code>best_k = nums_neighbors[knn_mses.index(min(knn_mses))]
 knn_mse = min(knn_mses)
-print(f&quot;Best MSE of {rf_mse} at n_neighbors of {best_k}&quot;)</code></pre>
-<pre><code>## Best MSE of 635719120.6646385 at n_neighbors of 5</code></pre>
-<pre class="python"><code>import matplotlib.pyplot as plt
-plt.close()
-plt.plot(nums_neighbors, knn_mses)
+print(f&quot;Best MSE of {knn_mse} at n_neighbors of {best_k}&quot;)</code></pre>
+<pre><code>## Best MSE of 776224614.0781039 at n_neighbors of 5</code></pre>
+<pre class="python"><code>plt.close()
+plt.plot(nums_neighbors, knn_mses, c=&quot;red&quot;)
 plt.title(&#39;MSE of different n_neighbors for KNN&#39;)
 plt.xlabel(&#39;Number of Neighbors&#39;, size=20)
 plt.ylabel(&#39;Mean Square Error&#39;, size=20)
+
+plt.rcParams[&quot;figure.autolayout&quot;] = True
 plt.show()
+
+
 
 # Now that we know the best n, train again</code></pre>
 <p><img src="modeling_files/figure-html/KNNRegressor-7.png" width="672" /></p>
-<pre class="python"><code>knn_regr = KNeighborsRegressor(n_neighbors=best_k)
+<pre class="python"><code>knn_regr = KNeighborsRegressor(
+  n_neighbors=best_k,
+  weights=&quot;distance&quot;
+  )
 # Fit the data to the model
 knn_regr.fit(X_train, y_train)
 # Make predictions on test data</code></pre>
-<pre><code>## KNeighborsRegressor()</code></pre>
+<pre><code>## KNeighborsRegressor(weights=&#39;distance&#39;)</code></pre>
 <pre class="python"><code>knn_y_pred = knn_regr.predict(X_test)
-# Report Mean Square Error</code></pre>
+</code></pre>
+<div id="defining-your-model-class-1" class="section level3">
+<h3>Defining your Model Class</h3>
+<p>Our model class is scikit-learn’s K-nearest neighbors regressor. The
+model class works by basically memorizing a list of points for comparing
+future points to - these future points are compared to the k nearest
+neighbors and take the weighted average of their values (weights are
+determined by distance). More information abou the model can be found
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">
+Here</a></p>
 </div>
-<div id="neural-network-regressor" class="section level3">
-<h3>Neural Network Regressor</h3>
+<div id="defining-the-cost-function-1" class="section level3">
+<h3>Defining the Cost Function</h3>
+<p>KNN does not exactly have a cost function - instead, the KNN model
+basically just memorizes the locations of the training dataset and
+compares future prediction points to the points the model was trained
+on. The model then chooses the weighted average of the k-closest
+points</p>
+</div>
+<div id="perform-optimization-1" class="section level3">
+<h3>Perform Optimization</h3>
+<p>We optimized the performance of our model by trying different numbers
+of neighbors (k) for the KNN model. This helped us determine which K
+values would be best for our model.</p>
+</div>
+<div id="check-knn-performance" class="section level3">
+<h3>Check KNN Performance</h3>
+<p>The performance of the model is checked below:</p>
+<pre class="python"><code>plt.close()
+max_val = max(max(y_test),max(knn_y_pred))
+plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(knn_y_pred, y_test, &#39;.b&#39;)
+plt.xlabel(&#39;KNN Model Predicted Sales Price ($)&#39;, size=20)
+plt.ylabel(&#39;True Sales Price ($)&#39;, size=20)
+plt.title(f&#39;KNN Regressor Diagnosis Plot (neighbors={best_k})&#39;)
+plt.legend([&#39;Perfect fit line&#39;,&quot;KNN Model&quot;])
+plt.show()
+
+# Report Mean Square Error</code></pre>
+<p><img src="modeling_files/figure-html/KNN-eval-9.png" width="672" /></p>
+<pre class="python"><code>print(f&quot;MSE of KNN: {mean_squared_error(y_test, knn_y_pred)}&quot;)</code></pre>
+<pre><code>## MSE of KNN: 776224614.0781039</code></pre>
+<pre class="python"><code>print(f&quot;KNN R^2 score: {knn_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## KNN R^2 score: 0.8829107281914653</code></pre>
+</div>
+</div>
+<div id="neural-network-regressor" class="section level2">
+<h2>Neural Network Regressor</h2>
 <pre class="python"><code>from sklearn.neural_network import MLPRegressor
 vals = []
 combos = []
-regr = MLPRegressor(random_state=1,
-  max_iter=2000, 
-  hidden_layer_sizes=(25,5),
-  learning_rate=&quot;constant&quot; # {‘constant’, ‘invscaling’, ‘adaptive’}
-  ).fit(X_train, y_train)
-MLP_pred = regr.predict(X_test)
-print(regr.score(X_test, y_test))</code></pre>
-<pre><code>## 0.8585620450523523</code></pre>
+mlp_regr = MLPRegressor(random_state=1,
+  max_iter=500, 
+  hidden_layer_sizes=(100,30,8),
+  learning_rate=&quot;constant&quot;, # {‘constant’, ‘invscaling’, ‘adaptive’}
+  alpha=10**-6, # default =0.0001
+  solver=&quot;adam&quot;,
+  batch_size=200
+  ).fit(X_train, y_train)</code></pre>
+<pre><code>## /stor/home/dcd2287/.local/lib/python3.6/site-packages/sklearn/neural_network/_multilayer_perceptron.py:617: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (500) reached and the optimization hasn&#39;t converged yet.
+##   % self.max_iter, ConvergenceWarning)</code></pre>
+<pre class="python"><code>MLP_y_pred = mlp_regr.predict(X_test)
+print(mlp_regr.score(X_test, y_test))</code></pre>
+<pre><code>## 0.9190756873516708</code></pre>
+<div id="defining-your-model-class-2" class="section level3">
+<h3>Defining your Model Class</h3>
+<p>Our model class is scikit-learn’s MLP. The model works by creating
+and training a neural network in epochs. We trained parameters More
+information about the model can be found
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html" target="_blank">
+Here</a></p>
 </div>
-<div id="evaluation-of-results" class="section level3">
-<h3>Evaluation of Results</h3>
+<div id="defining-the-cost-function-2" class="section level3">
+<h3>Defining the Cost Function</h3>
+<p>The cost function in the neural network minimizes</p>
+</div>
+<div id="perform-optimization-2" class="section level3">
+<h3>Perform Optimization</h3>
+<p>We optimized the performance of our model by trying different numbers
+of neighbors (k) for the KNN model. This helped us determine which K
+values would be best for our model.</p>
+</div>
+<div id="check-neural-net-performance" class="section level3">
+<h3>Check Neural Net Performance</h3>
+<p>The performance of the model is checked below:</p>
+<pre class="python"><code>plt.close()
+max_val = max(max(y_test),max(MLP_y_pred))
+plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(MLP_y_pred, y_test, &#39;.g&#39;)
+plt.xlabel(&#39;Neural Network Model Predicted Sales Price ($)&#39;, size=20)
+plt.ylabel(&#39;True Sales Price (%)&#39;, size=20)
+plt.title(&#39;Neural Network Model Diagnosis Plot&#39;)
+plt.legend([&#39;Perfect fit line&#39;,&quot;Neural Network Model&quot;])
+plt.show()
+
+# Report Mean Square Error</code></pre>
+<p><img src="modeling_files/figure-html/NeuralNetwork-eval-11.png" width="672" /></p>
+<pre class="python"><code>print(f&quot;MSE of Neural Network: {mean_squared_error(y_test, MLP_y_pred)}&quot;)</code></pre>
+<pre><code>## MSE of Neural Network: 536474797.26154166</code></pre>
+<pre class="python"><code>print(f&quot;Neural Network R^2 score: {mlp_regr.score(X_test, y_test)}&quot;)</code></pre>
+<pre><code>## Neural Network R^2 score: 0.9190756873516708</code></pre>
+</div>
+</div>
+<div id="comparing-models-evaluation" class="section level2">
+<h2>Comparing Models (Evaluation)</h2>
 <pre class="python"><code>
 lin_mse = mean_squared_error(y_test, lin_y_pred)
 knn_mse = mean_squared_error(y_test, knn_y_pred)
 rf_mse = mean_squared_error(y_test, rf_y_pred)
+MLP_mse = mean_squared_error(y_test, MLP_y_pred)
 
+max_val = max(
+  max(y_test),
+  max(MLP_y_pred),
+  max(rf_y_pred), 
+  max(knn_y_pred)
+)
 plt.close()
-plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
-plt.plot(lin_y_pred, y_test, &#39;*r&#39;)
-plt.plot(knn_y_pred, y_test, &#39;*b&#39;)
-plt.plot(rf_y_pred, y_test, &#39;*y&#39;)
+plt.xlim([0, max_val])</code></pre>
+<pre><code>## (0.0, 582933.0)</code></pre>
+<pre class="python"><code>plt.xlim([0, max_val])</code></pre>
+<pre><code>## (0.0, 582933.0)</code></pre>
+<pre class="python"><code>plt.plot([0.0, max_val], [0.0, max_val], &#39;k&#39;)
+plt.plot(lin_y_pred, y_test, &#39;.r&#39;,alpha=0.3)
+plt.plot(knn_y_pred, y_test, &#39;.b&#39;,alpha=0.3)
+plt.plot(rf_y_pred, y_test, &#39;.y&#39;,alpha=0.3)
+plt.plot(MLP_y_pred, y_test, &#39;.g&#39;,alpha=0.3)
 # apply legend()
-plt.xlabel(&#39;Linear Model Predicted Y&#39;, size=20)
-plt.ylabel(&#39;True Y&#39;, size=20)
+plt.xlabel(&#39;Model Predicted Sales Price ($)&#39;, size=20)
+plt.ylabel(&#39;True Sales Price ($)&#39;, size=20)
 plt.title(&#39;Model Diagnosis Plot (all models)&#39;)
-plt.legend([&#39;Perfect fit&#39;,&quot;Linear Model&quot;,&quot;KNN Model&quot;,&quot;RF Model&quot;])
+
+plt.legend([&#39;Perfect fit line&#39;,&quot;Linear Model&quot;,f&quot;KNN Model k={best_k}&quot;,f&quot;RF Model md={best_n}&quot;, &quot;Neural Network Model&quot;])
 plt.show()</code></pre>
-<p><img src="modeling_files/figure-html/evaluation-9.png" width="672" /></p>
-<pre class="python"><code>print(&quot;RMSEs---------------&quot;)</code></pre>
-<pre><code>## RMSEs---------------</code></pre>
-<pre class="python"><code>print(f&quot;Lin: {lin_mse:,}&quot;)</code></pre>
-<pre><code>## Lin: 923,829,749.6999959</code></pre>
-<pre class="python"><code>print(f&quot;KNN: {knn_mse:,}&quot;)</code></pre>
-<pre><code>## KNN: 2,076,361,495.049333</code></pre>
-<pre class="python"><code>print(f&quot;RFR: {rf_mse:,}&quot;)</code></pre>
-<pre><code>## RFR: 635,719,120.6646385</code></pre>
-<pre class="python"><code>print(&quot;R^2 Scores---------------&quot;)</code></pre>
-<pre><code>## R^2 Scores---------------</code></pre>
-<pre class="python"><code>print(f&quot;Lin: {lin_regr.score(X_test, y_test)}&quot;)</code></pre>
-<pre><code>## Lin: 0.8606452942800533</code></pre>
-<pre class="python"><code>print(f&quot;KNN: {knn_regr.score(X_test, y_test)}&quot;)</code></pre>
-<pre><code>## KNN: 0.686792133285606</code></pre>
-<pre class="python"><code>print(f&quot;RFR: {rf_regr.score(X_test, y_test)}&quot;)</code></pre>
-<pre><code>## RFR: 0.904105219593185</code></pre>
+<p><img src="modeling_files/figure-html/evaluation-13.png" width="672" /></p>
+<pre class="python"><code>print(f&quot;&quot;&quot;
+MSEs (Mean Square Errors)---------------
+Linear Reg:        {lin_mse:,}
+KNN Reg:           {knn_mse:,}
+Random Forest Reg: {rf_mse:,}
+Neural Network Reg: {MLP_mse:,}
+R^2 Scores---------------
+Linear Reg: {lin_regr.rsquared}
+KNN Reg: {knn_regr.score(X_test, y_test)}
+Random Forest Reg: {rf_regr.score(X_test, y_test)}
+Neural Network Reg: {mlp_regr.score(X_test, y_test)}&quot;&quot;&quot;)</code></pre>
+<pre><code>## 
+## MSEs (Mean Square Errors)---------------
+## Linear Reg:        915,059,405.4317662
+## KNN Reg:           776,224,614.0781039
+## Random Forest Reg: 627,261,421.4452841
+## Neural Network Reg: 536,474,797.26154166
+## R^2 Scores---------------
+## Linear Reg: 0.9361021808498309
+## KNN Reg: 0.8829107281914653
+## Random Forest Reg: 0.9053810176351551
+## Neural Network Reg: 0.9190756873516708</code></pre>
+</div>
+
+
+
 </div>
 </div>
-
-
-
 
 </div>
 
@@ -636,6 +900,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
