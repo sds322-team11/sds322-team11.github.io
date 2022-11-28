@@ -30,6 +30,7 @@ library(tidyverse)
 #install.packages("corrplot")
 library(corrplot)
 data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
+data <- na.omit(data)
 head(data)
 
 ```
@@ -75,6 +76,175 @@ TODO : create some sort of analysis of the categorical variables
 # Get only the categorical data
 categorical <- data %>% select_if(negate(is.numeric))
 categorical %>% glimpse()
+
+data$MSSubClass <- as.factor(data$MSSubClass)
+data$MSZoning <- as.factor(data$MSZoning)
+data$Street <- as.factor(data$Street)
+data$Alley <- as.factor(data$Alley)
+data$LotShape <-  as.factor(data$LotShape)
+data$LandContour <- as.factor(data$LandContour)
+data$Utilities <- as.factor(data$Utilities)
+data$LotConfig <-  as.factor(data$LotConfig)
+data$LandSlope <-  as.factor(data$LandSlope)
+data$Neighborhood <-  as.factor(data$Neighborhood)
+data$Condition1 <- as.factor(data$Condition1)
+data$Condition2 <- as.factor(data$Condition2)
+data$BldgType <- as.factor(data$BldgType)
+data$HouseStyle <- as.factor(data$HouseStyle)
+data$RoofStyle <- as.factor(data$RoofStyle)
+data$RoofMatl <- as.factor(data$RoofMatl)
+data$Exterior1st <- as.factor(data$Exterior1st)
+data$Exterior2nd <- as.factor(data$Exterior2nd)
+data$MasVnrType <- as.factor(data$MasVnrType)
+data$ExterQual <- as.factor(data$ExterQual)
+data$ExterCond <- as.factor(data$ExterCond)
+data$Foundation <- as.factor(data$Foundation)
+data$BsmtQual <- as.factor(data$BsmtQual)
+data$BsmtCond <- as.factor(data$BsmtCond)
+data$BsmtExposure <- as.factor(data$BsmtExposure)
+data$BsmtFinType1 <- as.factor(data$BsmtFinType1)
+data$BsmtFinType2 <- as.factor(data$BsmtFinType2)
+data$Heating <- as.factor(data$Heating)
+data$HeatingQC <- as.factor(data$HeatingQC)
+data$CentralAir <- as.factor(data$CentralAir)
+data$Electrical <- as.factor(data$Electrical)
+data$KitchenQual <- as.factor(data$KitchenQual)
+data$Functional <- as.factor(data$Functional)
+data$FireplaceQu <- as.factor(data$FireplaceQu)
+data$GarageType <- as.factor(data$GarageType)
+data$GarageFinish  <- as.factor(data$GarageFinish)
+data$GarageQual  <- as.factor(data$GarageQual)
+data$GarageCond  <- as.factor(data$GarageCond)
+data$PavedDrive <- as.factor(data$PavedDrive)
+data$PoolQC <- as.factor(data$PoolQC)
+data$Fence <- as.factor(data$Fence)
+data$MiscFeature <- as.factor(data$MiscFeature)
+data$SaleType <- as.factor(data$SaleType)
+data$SaleCondition <- as.factor(data$SaleCondition)
+
+factorial_variables <- c(2,3,6:17,22:26,28:34,36,40:43,54,56,58,59,61,64:66,73:75,79,80)
+str(data[,factorial_variables])
+
+library(dplyr)
+library(tidyr)
+data %>%
+  gather(Attributes, value, factorial_variables[1:9]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+data %>%
+  gather(Attributes, value, factorial_variables[10:18]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete() 
+data %>%
+  gather(Attributes, value, factorial_variables[28:36]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+
+data %>%
+  gather(Attributes, value, factorial_variables[37:44]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar Graphs") +
+  scale_fill_discrete() 
+
+data$MSSubClass <- as.factor(data$MSSubClass)
+data$MSZoning <- as.factor(data$MSZoning)
+data$Street <- as.factor(data$Street)
+data$Alley <- as.factor(data$Alley)
+data$LotShape <-  as.factor(data$LotShape)
+data$LandContour <- as.factor(data$LandContour)
+data$Utilities <- as.factor(data$Utilities)
+data$LotConfig <-  as.factor(data$LotConfig)
+data$LandSlope <-  as.factor(data$LandSlope)
+data$Neighborhood <-  as.factor(data$Neighborhood)
+data$Condition1 <- as.factor(data$Condition1)
+data$Condition2 <- as.factor(data$Condition2)
+data$BldgType <- as.factor(data$BldgType)
+data$HouseStyle <- as.factor(data$HouseStyle)
+data$RoofStyle <- as.factor(data$RoofStyle)
+data$RoofMatl <- as.factor(data$RoofMatl)
+data$Exterior1st <- as.factor(data$Exterior1st)
+data$Exterior2nd <- as.factor(data$Exterior2nd)
+data$MasVnrType <- as.factor(data$MasVnrType)
+data$ExterQual <- as.factor(data$ExterQual)
+data$ExterCond <- as.factor(data$ExterCond)
+data$Foundation <- as.factor(data$Foundation)
+data$BsmtQual <- as.factor(data$BsmtQual)
+data$BsmtCond <- as.factor(data$BsmtCond)
+data$BsmtExposure <- as.factor(data$BsmtExposure)
+data$BsmtFinType1 <- as.factor(data$BsmtFinType1)
+data$BsmtFinType2 <- as.factor(data$BsmtFinType2)
+data$Heating <- as.factor(data$Heating)
+data$HeatingQC <- as.factor(data$HeatingQC)
+data$CentralAir <- as.factor(data$CentralAir)
+data$Electrical <- as.factor(data$Electrical)
+data$KitchenQual <- as.factor(data$KitchenQual)
+data$Functional <- as.factor(data$Functional)
+data$FireplaceQu <- as.factor(data$FireplaceQu)
+data$GarageType <- as.factor(data$GarageType)
+data$GarageFinish  <- as.factor(data$GarageFinish)
+data$GarageQual  <- as.factor(data$GarageQual)
+data$GarageCond  <- as.factor(data$GarageCond)
+data$PavedDrive <- as.factor(data$PavedDrive)
+data$PoolQC <- as.factor(data$PoolQC)
+data$Fence <- as.factor(data$Fence)
+data$MiscFeature <- as.factor(data$MiscFeature)
+data$SaleType <- as.factor(data$SaleType)
+data$SaleCondition <- as.factor(data$SaleCondition)
+
+factorial_variables <- c(2,3,6:17,22:26,28:34,36,40:43,54,56,58,59,61,64:66,73:75,79,80)
+str(data[,factorial_variables])
+
+library(dplyr)
+library(tidyr)
+data %>%
+  gather(Attributes, value, factorial_variables[1:9]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+data %>%
+  gather(Attributes, value, factorial_variables[10:18]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete() 
+data %>%
+  gather(Attributes, value, factorial_variables[28:36]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+
+data %>%
+  gather(Attributes, value, factorial_variables[37:44]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar Graphs") +
+  scale_fill_discrete() 
+
 ```
 
 ## TODO: ANOVA 
