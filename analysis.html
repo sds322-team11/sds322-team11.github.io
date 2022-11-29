@@ -401,16 +401,15 @@ class="section level3">
 <h3>Histogram of SalePrice (dependent variable):</h3>
 <pre class="r"><code>data %&gt;% 
   ggplot(aes(x=SalePrice)) +
-  geom_histogram(color = &quot;#000000&quot;, fill = &quot;#0099F8&quot;) + 
+  geom_histogram(color = &quot;#e49700&quot;, fill = &quot;#fffbee&quot;) + 
   labs(
     title = &quot;Histogram of SalesPrice in Housing Data&quot;,
-    caption = &quot;Source: fill me in&quot;,
     x = &quot;Sales Price in $USD&quot;,
     y = &quot;Count&quot;
   ) +
   theme_classic() +
   theme(
-    plot.title = element_text(color = &quot;#0099F8&quot;, size = 16, face = &quot;bold&quot;),
+    plot.title = element_text(color = &quot;#e49700&quot;, size = 16, face = &quot;bold&quot;),
     plot.subtitle = element_text(size = 10, face = &quot;bold&quot;),
     plot.caption = element_text(face = &quot;italic&quot;)
   )</code></pre>
@@ -440,7 +439,12 @@ numeric_only &lt;- data %&gt;% select_if(is.numeric)
 res &lt;- cor(numeric_only)
 #res %&gt;% pivot_longer(c(0,10), names_to = &quot;var2&quot;)
 
-corrplot(res, tl.cex = .5)</code></pre>
+corrplot(
+  res, 
+  tl.cex = .5,
+  col = colorRampPalette(c(&quot;#ffb118&quot;,&quot;white&quot;, &quot;#3c726d&quot;))(100),
+  tl.col = &quot;#3c726d&quot;
+  )</code></pre>
 <p><img src="analysis_files/figure-html/correlation_plot-1.png" width="672" />
 ### Bar plots of categorical variables</p>
 <pre class="r"><code># Get only the categorical data

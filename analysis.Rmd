@@ -44,16 +44,15 @@ head(data)
 
 data %>% 
   ggplot(aes(x=SalePrice)) +
-  geom_histogram(color = "#000000", fill = "#0099F8") + 
+  geom_histogram(color = "#e49700", fill = "#fffbee") + 
   labs(
     title = "Histogram of SalesPrice in Housing Data",
-    caption = "Source: fill me in",
     x = "Sales Price in $USD",
     y = "Count"
   ) +
   theme_classic() +
   theme(
-    plot.title = element_text(color = "#0099F8", size = 16, face = "bold"),
+    plot.title = element_text(color = "#e49700", size = 16, face = "bold"),
     plot.subtitle = element_text(size = 10, face = "bold"),
     plot.caption = element_text(face = "italic")
   )
@@ -68,7 +67,12 @@ numeric_only <- data %>% select_if(is.numeric)
 res <- cor(numeric_only)
 #res %>% pivot_longer(c(0,10), names_to = "var2")
 
-corrplot(res, tl.cex = .5)
+corrplot(
+  res, 
+  tl.cex = .5,
+  col = colorRampPalette(c("#ffb118","white", "#3c726d"))(100),
+  tl.col = "#3c726d"
+  )
 ```
 ### Bar plots of categorical variables
 

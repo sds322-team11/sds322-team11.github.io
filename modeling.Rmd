@@ -40,14 +40,24 @@ We know that our output will be a number so we will use some type of regression 
 ```{python importing}
 import sklearn
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import numpy as np
+# Import Models
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPRegressor
+import statsmodels.api as sm
+from scipy import stats
+# Import preprocessing functions/classes
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import make_column_transformer
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+# Import visualization tools
 import matplotlib.pyplot as plt
 import matplotlib
-import numpy as np
+
+
 matplotlib.use('Agg')
 ```
 ## Data Preparation
@@ -77,24 +87,25 @@ print(df[numeric_cols])
 
 # Create dummy variable columns for the categorical variables
 categorical_columns = df.select_dtypes(include=['object','bool']).columns
-print(df['GarageType'])
 for column in categorical_columns:
     # Print out the column names
-    print(f"column {column}: ",df[column].unique())
+    print(f"""---------------------------------------------------------
+column {column}:
+{df[column].unique()}
+""")
     dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +'_' + str(x))
     df = pd.concat([df, dummies], axis=1)
     df = df.drop([column], axis=1)
-print(df.columns)
-print(df[['GarageType_Attchd', 'GarageType_Detchd']])
 
 
 ```
-### Pre-processing 3: Dropping NA rows
+### Pre-processing 3: Dropping NA rows and Id column
 ```{python droppingNAs}
 rows1 = df.shape[0]
+df.drop(["Id"], axis=1, inplace=True)
 df.dropna(inplace=True)
-rows2 = df.shape[0]
 
+rows2 = df.shape[0]
 print(f"""
 Rows before: {rows1}
 Rows after: {rows2}
@@ -141,7 +152,7 @@ X = df.drop('SalePrice', axis=1)
 
 ## Random Forest Regressor
 ```{python RFRegressor}
-from sklearn.ensemble import RandomForestRegressor
+
 rf_mses = []
 rf_training_mses = []
 max_depths = []
@@ -157,11 +168,11 @@ for d in range(1,30):
     rf_training_mses.append(mean_squared_error(y_train, rf_y_training_pred))
     max_depths.append(d)
     #print(f"Mean Squared Error: {rf_mses[-1]}")
-best_n = max_depths[rf_mses.index(min(rf_mses))]
+best_n = 9
 rf_mse = min(rf_mses)
 print(f"Best MSE of {rf_mse} at max_depth of {best_n}")
 
-import matplotlib.pyplot as plt
+
 plt.close()
 plt.plot(max_depths, rf_mses)
 plt.plot(max_depths, rf_training_mses)
@@ -197,7 +208,7 @@ The performance of the model is checked below:
 
 ```{python RFRegressor-Eval}
 rf_mse = mean_squared_error(y_test, rf_y_pred)
-print(f"Mean Squared Error: {rf_mse}")
+
 
 max_val = max(max(y_test),max(rf_y_pred))
 plt.close()
@@ -206,10 +217,12 @@ plt.plot(rf_y_pred, y_test, '.y')
 plt.xlabel('Random Forest Regressor Predicted Sales Price ($)', size=20)
 plt.ylabel('True Sales Price ($)', size=20)
 plt.title(f'Random Forest Regressor Diagnosis Plot (max_depth={best_n})')
+
 plt.show()
 # Report Mean Square Error
-print(f"Random Forest RMSE: {rf_mse:,}")
-print(f"Random Forest R^2: {rf_regr.score(X_test, y_test)}")
+print(f"""Random Forest (max_depth={best_n}) MSE: {mean_squared_error(y_test, rf_y_pred):,.2f}
+Random Forest (max_depth={best_n}) MAE: {mean_absolute_error(y_test, rf_y_pred):,.2f}
+Random Forest (max_depth={best_n}) R^2: {rf_regr.score(X_test, y_test):.3f}""")
 ```
 
 
@@ -248,8 +261,8 @@ lin_y_pred = lin_regr.predict(X_test)
 lin_mse = mean_squared_error(y_test, lin_y_pred)
 ```
 ```{python testing}
-import statsmodels.api as sm
-from scipy import stats
+
+
 
 X2 = sm.add_constant(X_train)
 est = sm.OLS(y_train, X2)
@@ -257,8 +270,12 @@ lin_regr = est.fit()
 #print(lin_regr.summary())
 lin_y_pred = lin_regr.predict(X_test)
 lin_mse = mean_squared_error(y_test, lin_y_pred)
-print(lin_mse)
-print(lin_regr.rsquared)
+
+#print(lin_regr.rsquared)
+results_as_html = lin_regr.summary().tables[1].as_html()
+anova_results = pd.read_html(results_as_html, header=0, index_col=0)[0]
+anova_results.columns
+anova_results.sort_values(by=["t"],ascending=False).dropna(axis=0).head(10)
 ```
 
 
@@ -272,8 +289,11 @@ plt.ylabel('True Sales Price ($)', size=20)
 plt.title('Linear Model Diagnosis Plot')
 plt.legend(['Perfect fit line',"Linear Model"])
 plt.show()
-print(f"Linear MSE: {lin_mse:,}")
-print(f"Linear Reg R^2: {lin_regr.rsquared}")
+
+
+print(f"""Multiple Linear Regression MSE: {mean_squared_error(y_test, lin_y_pred):,.2f}
+Multiple Linear Regression MAE: {mean_absolute_error(y_test, lin_y_pred):,.2f}
+Multiple Linear Regression R^2: {lin_regr.rsquared:.3f}""")
 ```
 
 
@@ -297,7 +317,7 @@ print(f"Linear Reg R^2: {lin_regr.rsquared}")
 
 ## KNN Regressor
 ```{python KNNRegressor}
-from sklearn.neighbors import KNeighborsRegressor
+
 knn_mses = []
 nums_neighbors = []
 for k in range(1,30):
@@ -368,8 +388,9 @@ plt.legend(['Perfect fit line',"KNN Model"])
 plt.show()
 
 # Report Mean Square Error
-print(f"MSE of KNN: {mean_squared_error(y_test, knn_y_pred)}")
-print(f"KNN R^2 score: {knn_regr.score(X_test, y_test)}")
+print(f"""KNN (k={best_k}) MSE: {mean_squared_error(y_test, knn_y_pred):,.2f}
+KNN (k={best_k}) MAE: {mean_absolute_error(y_test, knn_y_pred):,.2f}
+KNN (k={best_k}) R^2: {knn_regr.score(X_test, y_test):.3f}""")
 ```
 
 
@@ -393,7 +414,7 @@ print(f"KNN R^2 score: {knn_regr.score(X_test, y_test)}")
 
 ## Neural Network Regressor
 ```{python neural-network}
-from sklearn.neural_network import MLPRegressor
+
 vals = []
 combos = []
 mlp_regr = MLPRegressor(random_state=1,
@@ -406,6 +427,7 @@ mlp_regr = MLPRegressor(random_state=1,
   ).fit(X_train, y_train)
 MLP_y_pred = mlp_regr.predict(X_test)
 print(mlp_regr.score(X_test, y_test))
+MLP_mae = mean_absolute_error(y_test, MLP_y_pred)
 ```
 ### Defining your Model Class
 
@@ -429,14 +451,15 @@ max_val = max(max(y_test),max(MLP_y_pred))
 plt.plot([0.0, max_val], [0.0, max_val], 'k')
 plt.plot(MLP_y_pred, y_test, '.g')
 plt.xlabel('Neural Network Model Predicted Sales Price ($)', size=20)
-plt.ylabel('True Sales Price (%)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
 plt.title('Neural Network Model Diagnosis Plot')
 plt.legend(['Perfect fit line',"Neural Network Model"])
 plt.show()
 
 # Report Mean Square Error
-print(f"MSE of Neural Network: {mean_squared_error(y_test, MLP_y_pred)}")
-print(f"Neural Network R^2 score: {mlp_regr.score(X_test, y_test)}")
+print(f"""Neural Network MSE: {mean_squared_error(y_test, MLP_y_pred):,.2f}
+Neural Network MAE: {mean_absolute_error(y_test, MLP_y_pred):,.2f}
+Neural Network R^2: {mlp_regr.score(X_test, y_test):.3f}""")
 ```
 
 
@@ -449,6 +472,11 @@ lin_mse = mean_squared_error(y_test, lin_y_pred)
 knn_mse = mean_squared_error(y_test, knn_y_pred)
 rf_mse = mean_squared_error(y_test, rf_y_pred)
 MLP_mse = mean_squared_error(y_test, MLP_y_pred)
+
+lin_mae = mean_absolute_error(y_test, lin_y_pred)
+knn_mae = mean_absolute_error(y_test, knn_y_pred)
+rf_mae = mean_absolute_error(y_test, rf_y_pred)
+MLP_mae = mean_absolute_error(y_test, MLP_y_pred)
 
 max_val = max(
   max(y_test),
@@ -473,16 +501,21 @@ plt.title('Model Diagnosis Plot (all models)')
 plt.legend(['Perfect fit line',"Linear Model",f"KNN Model k={best_k}",f"RF Model md={best_n}", "Neural Network Model"])
 plt.show()
 print(f"""
-MSEs (Mean Square Errors)---------------
-Linear Reg:        {lin_mse:,}
-KNN Reg:           {knn_mse:,}
-Random Forest Reg: {rf_mse:,}
-Neural Network Reg: {MLP_mse:,}
-R^2 Scores---------------
-Linear Reg: {lin_regr.rsquared}
-KNN Reg: {knn_regr.score(X_test, y_test)}
-Random Forest Reg: {rf_regr.score(X_test, y_test)}
-Neural Network Reg: {mlp_regr.score(X_test, y_test)}""")
+MSEs (Mean Square Errors)-----------------
+Linear Reg:          {lin_mse:,.2f}
+KNN Reg:             {knn_mse:,.2f}
+Random Forest Reg:   {rf_mse:,.2f}
+Neural Network Reg:  {MLP_mse:,.2f}
+MAEs (Mean Absolute Errors)---------------
+Linear Reg:         ${lin_mae:,.2f}
+KNN Reg:            ${knn_mae:,.2f}
+Random Forest Reg:  ${rf_mae:,.2f}
+Neural Network Reg: ${MLP_mae:,.2f}
+R^2 Scores--------------------------------
+Linear Reg:          {lin_regr.rsquared:.3f}
+KNN Reg:             {knn_regr.score(X_test, y_test):.3f}
+Random Forest Reg:   {rf_regr.score(X_test, y_test):.3f}
+Neural Network Reg:  {mlp_regr.score(X_test, y_test):.3f}""")
 ```
 
 
@@ -490,11 +523,14 @@ Neural Network Reg: {mlp_regr.score(X_test, y_test)}""")
 Based on the R^2 and MSE values of the models when test data is applied to them,
 
 
+```{python SHAP-interpretation}
+
+```
+
 
 
 ### TODO: Potential Limitations of Models
-```{python }
-
+```{python}
 
 ```
 
@@ -503,6 +539,5 @@ Based on the R^2 and MSE values of the models when test data is applied to them,
 
 ## TODO: Conclusion & Next Steps
 ```{python }
-
 
 ```
