@@ -395,8 +395,9 @@ matplotlib.use(&#39;Agg&#39;)</code></pre>
 </div>
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
-<div id="pre-processing-1-normalizing-data" class="section level3">
-<h3>Pre-processing 1: Normalizing data</h3>
+<div id="pre-processing-1-normalizing-data-with-z-scores"
+class="section level3">
+<h3>Pre-processing 1: Normalizing data with Z-scores</h3>
 <pre class="python"><code>df = pd.read_csv(&#39;clean_train.csv&#39;)
 
 # create a scaler object
@@ -441,9 +442,9 @@ print(df[numeric_cols])</code></pre>
 ## [1456 rows x 57 columns]</code></pre>
 </div>
 <div
-id="pre-processing-2-creating-dummy-variables-for-categorircal-variables"
+id="pre-processing-2-creating-dummy-variables-for-categorical-variables"
 class="section level3">
-<h3>Pre-processing 2: Creating Dummy Variables for categorircal
+<h3>Pre-processing 2: Creating Dummy Variables for categorical
 variables</h3>
 <pre class="python"><code>
 
@@ -1021,17 +1022,119 @@ Neural Network Reg:  {mlp_regr.score(X_test, y_test):.3f}&quot;&quot;&quot;)</co
 ## Random Forest Reg:   0.903
 ## Neural Network Reg:  0.920</code></pre>
 </div>
-<div id="todo-findings-and-interpretations" class="section level3">
-<h3>TODO: Findings and Interpretations</h3>
+</div>
+<div id="findings-and-interpretations" class="section level2">
+<h2>Findings and Interpretations</h2>
 <p>Based on the R^2 and MSE values of the models when test data is
-applied to them,</p>
+applied to them, the neural network performed best when evaluating using
+MSE or MAE, whereas the linear regression had the best R^2 value.</p>
+<p>In addition to the predictive power of the model as a whole, we can
+look at the output summary tables from the linear regression to get a
+good idea of the variables that have the greatest statistical
+significance for predicting the sales price of a home.</p>
+<pre class="python"><code>results_as_html = lin_regr.summary().tables[1].as_html()
+anova_results = pd.read_html(results_as_html, header=0, index_col=0)[0]
+anova_results.columns</code></pre>
+<pre><code>## Index([&#39;coef&#39;, &#39;std err&#39;, &#39;t&#39;, &#39;P&gt;|t|&#39;, &#39;[0.025&#39;, &#39;0.975]&#39;], dtype=&#39;object&#39;)</code></pre>
+<pre class="python"><code>anova_results.sort_values(by=[&quot;t&quot;],ascending=False).dropna(axis=0).head(10)</code></pre>
+<pre><code>##                             coef   std err      t  P&gt;|t|     [0.025     0.975]
+## GrLivArea             15830.0000  1733.976  9.132    0.0  12400.000  19200.000
+## Utilities              1354.7091   185.012  7.322    0.0    991.458   1717.960
+## OverallQual           13520.0000  1913.503  7.065    0.0   9761.645  17300.000
+## LotArea               17430.0000  2949.221  5.911    0.0  11600.000  23200.000
+## Neighborhood_StoneBr  46790.0000  8116.444  5.765    0.0  30900.000  62700.000
+## Street_Pave           41550.0000  7305.275  5.687    0.0  27200.000  55900.000
+## BsmtFinSF1             7239.0775  1272.914  5.687    0.0   4739.853   9738.302
+## MasVnrType_Stone      23010.0000  4076.617  5.644    0.0  15000.000  31000.000
+## 2ndFlrSF              11910.0000  2199.196  5.417    0.0   7596.218  16200.000
+## BldgType_1Fam         26950.0000  5081.000  5.305    0.0  17000.000  36900.000</code></pre>
+<p>Before rushing to conclusions about the coefficients of the linear
+model coefficients, keep in mind that they are coefficients for
+z-score-standardized independent variables. As you can see, the
+following variables appeared to be tthe most statistically significant
+for predicting the sales price of a home in the linear model:</p>
+<ol style="list-style-type: decimal">
+<li><p>GrLivArea - above ground living area square feet</p></li>
+<li><p>Utilities - type of utilities available</p></li>
+<li><p>OverallQual - Rates the overall material and finish of the
+house</p></li>
+<li><p>LotArea - lot size in square feet</p></li>
+</ol>
 </div>
-<div id="todo-potential-limitations-of-models" class="section level3">
-<h3>TODO: Potential Limitations of Models</h3>
+<div id="potential-limitations" class="section level2">
+<h2>Potential Limitations</h2>
+<p>Some potential limitations of our modeling:</p>
+<ul>
+<li><p>Findings cannot being generalized to all houses- our sample is
+only in Ames, Iowa; because of this, the findings can only be
+generalized to this area.</p></li>
+<li><p>Variable types may have been misclassified as numeric (or
+categorical) in data preparation stage, leading to lower predictive
+power</p></li>
+<li><p>Original rows with N/A values may have been able to be filled
+with other values such as 0 or a potential default value for better
+predictive power</p></li>
+<li><p>Other hyperparameters could have been tuned using GridSearchCV or
+other hyperparameter tuning methods, especially the neural
+network</p></li>
+<li><p>The dataset lacked many higher sales price homes. This lead to
+potential errors or bias when training our models. This is evident in
+the higher prediction variance as actual price of the home
+increases.</p></li>
+</ul>
 </div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<div id="main-findings" class="section level2">
+<h2>Main Findings</h2>
+<p>Hypothesis Main Findings: - Houses that have a higher quality rating
+have a higher sales price.</p>
+<ul>
+<li><p>Additionally, houses that have foundation made of poured concrete
+are priced significantly higher than houses with foundations that are
+made of cinder blocks.</p></li>
+<li><p>Houses with garages without a finish are priced significantly
+lower than garages with a garage finish</p></li>
+<li><p>Houses that have a garage capacity of 3 or more car spots have a
+higher sales price on average than garages with less than 3 car
+spots.</p></li>
+</ul>
+<p>Predictive Model Findings: - Models generally underperformed in
+houses with a higher sales price, likely due to a lack of high sales
+price data prevalence in the dataset</p>
+<ul>
+<li><p>The coefficients in the Linear model that appeared to have the
+most statistically significant impact on the variance in the model
+were:</p>
+<ul>
+<li><p>GrLivArea - Above grade (ground) living area square feet</p></li>
+<li><p>Utilities - Type of utilities available</p></li>
+<li><p>OverallQual - Rates the overall material and finish of the
+house</p></li>
+<li><p>LotArea - Lot size in square feet</p></li>
+<li><p>Neighborhood_StoneBr - Located in StoneBr Neighborhood</p></li>
+<li><p>Street_Pave - Paved road access to property</p></li>
+</ul></li>
+<li><p>To increase accuracy of the model, one could perform
+hyperparameter tuning, figure out alternatives for null data,</p></li>
+</ul>
 </div>
-<div id="todo-conclusion-next-steps" class="section level2">
-<h2>TODO: Conclusion &amp; Next Steps</h2>
+<div id="next-steps" class="section level2">
+<h2>Next Steps</h2>
+<ul>
+<li><p>Find a better way to deal with nulls other than deleting them
+from the dataset. Perhaps there are default values that the nulls could
+be instead</p></li>
+<li><p>Explore greater hyperparameter testing and optimization using
+GridSearchCV, or using a library such as Tensorflow/Keras for more
+highly-customizing the hyperparameters.</p></li>
+<li><p>Measure housing data in a more objective way. For example, the
+quality measurement was a subjective way to measure a house which could
+be inconsistent across different samples in the population.</p></li>
+<li><p>Create new features and find interactions between variables that
+may affect the sales price</p></li>
+</ul>
+</div>
 </div>
 
 

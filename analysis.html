@@ -752,10 +752,6 @@ data %&gt;%
 ## they will be dropped</code></pre>
 <p><img src="analysis_files/figure-html/unnamed-chunk-1-8.png" width="672" /></p>
 </div>
-<div id="todo-anova" class="section level2">
-<h2>TODO: ANOVA</h2>
-<p>Create some sort of analysis of variance</p>
-</div>
 </div>
 <div id="hypotheses" class="section level1">
 <h1>Hypotheses</h1>
@@ -782,10 +778,10 @@ t.test(SalePrice ~ quality, data = hyp1,
 ## sample estimates:
 ## mean in group higher quality  mean in group lower quality 
 ##                     212101.9                     125633.2</code></pre>
-<pre class="r"><code>boxplot(SalePrice ~ quality, data = hyp1, xlab = &quot;Quality Level&quot;,
-   ylab = &quot;Sales Price ($)&quot;, main = &quot;Comparing Sales price of different Quality houses&quot;)</code></pre>
+<pre class="r"><code>hyp1%&gt;% ggplot(aes(x=quality,y=SalePrice,fill=quality))+ geom_boxplot()+scale_fill_manual(values=c(&quot;#ffcb64&quot;,&quot;#74c1b9&quot;))+xlab(&quot;Quality Level&quot;)+
+   ylab( &quot;Sales Price ($)&quot;)+ ggtitle(&quot;Comparing Sales Price of Different Quality houses&quot;)</code></pre>
 <p><img src="analysis_files/figure-html/hypothesis-1-1.png" width="672" />
-The one tailed t-test reveals that the there is a significant difference
+The one tailed t-test reveals that there is a significant difference
 between the means of higher quality houses(quality&gt;5) and lower
 quality houses(Overall quality &lt;=5). Since the p-value is less than
 0.05, we can reject the null hypothesis and accept the alternative that
@@ -807,7 +803,7 @@ summary(AOV)</code></pre>
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>summ&lt;-data1%&gt;% group_by(Foundation)%&gt;% summarise(mean_price=mean(SalePrice))
-ggplot(summ,aes(x=Foundation,y=mean_price))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Foundation Type&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Foundation&quot;)</code></pre>
+ggplot(summ,aes(x=Foundation,y=mean_price,fill=Foundation))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Foundation Type&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Foundation&quot;)+scale_fill_manual(values=c(&quot;#ffcb64&quot;,&quot;#74c1b9&quot;))</code></pre>
 <p><img src="analysis_files/figure-html/hypothesis2-1.png" width="672" />
 Based on the ANOVA test, we can conclude that there is a significant
 difference in sales price between houses that have foundations made of
@@ -829,7 +825,7 @@ summary(AOV1)</code></pre>
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>summ&lt;-data2%&gt;% group_by(GarageFinish)%&gt;% summarise(mean_price=mean(SalePrice))
-ggplot(summ,aes(x=GarageFinish,y=mean_price))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Garage Finish&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Garage&quot;)</code></pre>
+ggplot(summ,aes(x=GarageFinish,y=mean_price,fill=GarageFinish))+geom_col()+labs(y=&quot;Mean Sales Price ($)&quot;,x=&quot;Garage Finish&quot;)+ggtitle(&quot;Mean Sales Price of Houses Varying in Garage Finishing&quot;)+scale_fill_manual(values=c(&quot;#ffcb64&quot;,&quot;#74c1b9&quot;))</code></pre>
 <p><img src="analysis_files/figure-html/hypothesis3-1.png" width="672" />
 Based on the ANOVA test, we can conclude that there is a significant
 difference in sales price between houses that have unfinished garages
@@ -840,16 +836,16 @@ and houses that have finished garages.</p>
 <p>Houses with a garage that can hold 3 or more cars have on average a
 higher sales price.</p>
 <pre class="r"><code>hyp4&lt;-data %&gt;%
-  mutate(garagecarsn = case_when(
+  mutate(garage_capacity = case_when(
     (GarageCars&lt;3) ~ &quot;less than 3 cars&quot;,
     (GarageCars&gt;=3) ~ &quot;3 or more cars&quot;
     ))
-t.test(SalePrice ~ garagecarsn, data = hyp4,
+t.test(SalePrice ~ garage_capacity, data = hyp4,
         var.equal = FALSE, alternative = &quot;greater&quot;)</code></pre>
 <pre><code>## 
 ##  Welch Two Sample t-test
 ## 
-## data:  SalePrice by garagecarsn
+## data:  SalePrice by garage_capacity
 ## t = 19.022, df = 198.47, p-value &lt; 2.2e-16
 ## alternative hypothesis: true difference in means is greater than 0
 ## 95 percent confidence interval:
@@ -857,15 +853,15 @@ t.test(SalePrice ~ garagecarsn, data = hyp4,
 ## sample estimates:
 ##   mean in group 3 or more cars mean in group less than 3 cars 
 ##                       302309.7                       162590.4</code></pre>
-<pre class="r"><code>boxplot(SalePrice ~ garagecarsn, data = hyp4, xlab = &quot;Car Capacity&quot;,
-   ylab = &quot;Sales Price ($)&quot;, main = &quot;Comparing Sales price with Different Garage capacity&quot;)</code></pre>
+<pre class="r"><code>hyp4%&gt;% ggplot(aes(y=SalePrice,x=garage_capacity,fill=garage_capacity))+geom_boxplot()+ xlab(&quot;Car Capacity&quot;)+
+   ylab(&quot;Sales Price ($)&quot;)+ggtitle( &quot;Comparing Sales price with Different Garage Capacity&quot;)+scale_fill_manual(values=c(&quot;#ffcb64&quot;,&quot;#74c1b9&quot;))</code></pre>
 <p><img src="analysis_files/figure-html/hypothesis4-1.png" width="672" /></p>
-<p>The one tailed t-test reveals that the there is a significant
-difference between the means of houses that have garages of 3 or more
-car capacity and houses that have garages with less than 3 car capacity.
-Since the p-value is less than 0.05, we can reject the null hypothesis
-and accept the alternative that higher quality houses have a higher
-sales price.</p>
+<p>The one tailed t-test reveals that there is a significant difference
+between the means of houses that have garages of 3 or more car capacity
+and houses that have garages with less than 3 car capacity. Since the
+p-value is less than 0.05, we can reject the null hypothesis and accept
+the alternative that higher quality houses have a higher sales
+price.</p>
 </div>
 </div>
 

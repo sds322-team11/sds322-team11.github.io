@@ -1,0 +1,1022 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+library(knitr)
+use_python(Sys.which("python3")) # Use python3
+Sys.which("python3")
+```
+
+
+# Introduction
+
+The Team:
+
+Derek Dreibrodt
+
+Abdulateef Oyegbefun
+
+Areesa Mahesania
+
+Jose W. Ruiz
+
+## Project Summary
+
+Identifying trends between home attributes and the sales price of the homes to approximate what variables have the most impact on the sales price and which can be used to predict sales price. Our goal is to create a model that can take attributes of homes as inputs and accurately predict what the sales price will be.
+
+## Motivations and Goals
+
+According to sources such as Investopedia, buying a home can be one of the most powerful ways to build and accumulate wealth. At the time of writing this report, the members of our group will be graduating soon and we wanted to try to invest in real estate as soon as possible to take advantage of the wealth-building potential of real estate. Due to our young age, we haven't had experience shopping for homes or even exploring what factors might contribute to the sales price of a home; because of this, we chose to investigate the sales price of homes and see what factors contribute the most (or don't contribute) to the sales price.
+
+Our goal is to find which factors appear to most greatly affect the sales price of a home. Once these factors are found, our goal is to explore the predictive power the factors have on sales price and whether they can be used to accurately predict the sales price of a home (SalePrice).
+
+# Data
+
+## Data
+A link to our data can be found at
+https://www.kaggle.com/datasets/rsizem2/house-prices-ames-cleaned-dataset?select=new_train.csv
+
+
+
+This dataset is the processed version of the Ames Housing dataset that was used in a Kaggle data science competition.
+
+## Our Dataset
+
+This dataset is an open-source dataset found on Kaggle that has already been cleaned. The dataset contains 80 predictive variables related to attributes of a house. This dataset also has 1456 observations. All observations are houses in different neighborhoods in Ames, Iowa.
+
+Here is a list of the variables in our dataset:
+
+- SalePrice - the property's sale price in dollars. This is the target variable that you're trying to predict.
+- MSSubClass: The building class
+- MSZoning: The general zoning classification
+- LotFrontage: Linear feet of street connected to property
+- LotArea: Lot size in square feet
+- Street: Type of road access
+- Alley: Type of alley access
+- LotShape: General shape of property
+- LandContour: Flatness of the property
+- Utilities: Type of utilities available
+- LotConfig: Lot configuration
+- LandSlope: Slope of property
+- Neighborhood: Physical locations within Ames city limits
+- Condition1: Proximity to main road or railroad
+- Condition2: Proximity to main road or railroad (if a second is present)
+- BldgType: Type of dwelling
+- HouseStyle: Style of dwelling
+- OverallQual: Overall material and finish quality
+- OverallCond: Overall condition rating
+- YearBuilt: Original construction date
+- YearRemodAdd: Remodel date
+- RoofStyle: Type of roof
+- RoofMatl: Roof material
+- Exterior1st: Exterior covering on house
+- Exterior2nd: Exterior covering on house (if more than one material)
+- MasVnrType: Masonry veneer type
+- MasVnrArea: Masonry veneer area in square feet
+- ExterQual: Exterior material quality
+- ExterCond: Present condition of the material on the exterior
+- Foundation: Type of foundation
+- BsmtQual: Height of the basement
+- BsmtCond: General condition of the basement
+- BsmtExposure: Walkout or garden level basement walls
+- BsmtFinType1: Quality of basement finished area
+- BsmtFinSF1: Type 1 finished square feet
+- BsmtFinType2: Quality of second finished area (if present)
+- BsmtFinSF2: Type 2 finished square feet
+- BsmtUnfSF: Unfinished square feet of basement area
+- TotalBsmtSF: Total square feet of basement area
+- Heating: Type of heating
+- HeatingQC: Heating quality and condition
+- CentralAir: Central air conditioning
+- Electrical: Electrical system
+- 1stFlrSF: First Floor square feet
+- 2ndFlrSF: Second floor square feet
+- LowQualFinSF: Low quality finished square feet (all floors)
+- GrLivArea: Above grade (ground) living area square feet
+- BsmtFullBath: Basement full bathrooms
+- BsmtHalfBath: Basement half bathrooms
+- FullBath: Full bathrooms above grade
+- HalfBath: Half baths above grade
+- Bedroom: Number of bedrooms above basement level
+- Kitchen: Number of kitchens
+- KitchenQual: Kitchen quality
+- TotRmsAbvGrd: Total rooms above grade (does not include bathrooms)
+- Functional: Home functionality rating
+- Fireplaces: Number of fireplaces
+- FireplaceQu: Fireplace quality
+- GarageType: Garage location
+- GarageYrBlt: Year garage was built
+- GarageFinish: Interior finish of the garage
+- GarageCars: Size of garage in car capacity
+- GarageArea: Size of garage in square feet
+- GarageQual: Garage quality
+- GarageCond: Garage condition
+- PavedDrive: Paved driveway
+- WoodDeckSF: Wood deck area in square feet
+- OpenPorchSF: Open porch area in square feet
+- EnclosedPorch: Enclosed porch area in square feet
+- 3SsnPorch: Three season porch area in square feet
+- ScreenPorch: Screen porch area in square feet
+- PoolArea: Pool area in square feet
+- PoolQC: Pool quality
+- Fence: Fence quality
+- MiscFeature: Miscellaneous feature not covered in other categories
+- MiscVal: $Value of miscellaneous feature
+- MoSold: Month Sold
+- YrSold: Year Sold
+- SaleType: Type of sale
+- SaleCondition: Condition of sale
+
+More information about all of the variables can be found at the project data source in the description.txt file found at https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data#:~:text=csv%2C%20txt-,data_description.txt,-(13.37%20kB
+
+## Cleaning the Data
+
+We only performed data cleaning for the data in Python. This is because our hypothesis appeared to work fine without any cleaning and the hypotheses conducted did not need data cleaning steps such as creating testing and training data.
+
+
+## Import model libraries
+```{python importing}
+# Python 3
+import sklearn
+import pandas as pd
+import numpy as np
+# Import Models
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPRegressor
+import statsmodels.api as sm
+from scipy import stats
+# Import preprocessing functions/classes
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import make_column_transformer
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+# Import visualization tools
+import matplotlib.pyplot as plt
+import matplotlib
+
+
+matplotlib.use('Agg')
+```
+## Data Preparation
+
+### Pre-processing 1: Normalizing data with Z-scores
+```{python normalization}
+# Python 3
+df = pd.read_csv('clean_train.csv')
+
+# create a scaler object
+std_scaler = StandardScaler()
+# fit and transform the data
+numeric_cols = list(df.select_dtypes(include=['int64','float64']).columns)
+
+# Remove SalePrice from the values to be normalized
+numeric_cols.remove("SalePrice")
+print(df[numeric_cols])
+# Normalize all numeric values
+df[numeric_cols] = pd.DataFrame(std_scaler.fit_transform(df[numeric_cols]),
+  columns=numeric_cols)
+print(df[numeric_cols])
+```
+
+
+### Pre-processing 2: Creating Dummy Variables for categorical variables
+```{python dummies}
+# Python 3
+
+# Create dummy variable columns for the categorical variables
+categorical_columns = df.select_dtypes(include=['object','bool']).columns
+for column in categorical_columns:
+    # Print out the column names
+    print(f"""---------------------------------------------------------
+column {column}:
+{df[column].unique()}
+""")
+    dummies = pd.get_dummies(df[column]).rename(columns= lambda x: column +'_' + str(x))
+    df = pd.concat([df, dummies], axis=1)
+    df = df.drop([column], axis=1)
+
+
+```
+### Pre-processing 3: Dropping NA rows and Id column
+```{python droppingNAs}
+# Python 3
+rows1 = df.shape[0]
+df.drop(["Id"], axis=1, inplace=True)
+df.dropna(inplace=True)
+
+rows2 = df.shape[0]
+print(f"""
+Rows before: {rows1}
+Rows after: {rows2}
+-----------------------------
+Rows dropped: {rows1 - rows2}
+""")
+```
+
+
+### Pre-processing 4: Creating test and training datasets
+```{python training-separation}
+# Python 3
+# Create dataframes for independent and dependent variables
+# Dependent variable
+y = df['SalePrice']
+# Independent Variable
+X = df.drop('SalePrice', axis=1)
+
+# Create training and test sets. Test is .25 of data
+(X_train, X_test, y_train, y_test) = train_test_split(X, y,  test_size=.25, random_state=123)
+```
+
+
+# Exploratory Analysis (Hypotheses)
+
+Our exploratory analyses and Hypotheses are primarily done in R. We conducted the exploratory analysis because R provides more a more robust plug-and-play way to display data and make hypotheses.
+
+## Analyzing the data as a whole:
+```{R imports, message=FALSE}
+# R
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(tidyverse)
+#install.packages("corrplot")
+library(corrplot)
+data <- read_csv("~/SDS322E/final_project_homepage/clean_train.csv")
+#data <- na.omit(data)
+glimpse(data)
+
+```
+
+
+## Visualization 1: Histogram of Dependent Variables (Sales Price)
+Next, we analyzed the distribution of our sales price dependent variable. It appears to be slightly right skewed.
+```{R sale_price_histogram}
+# R
+
+data %>% 
+  ggplot(aes(x=SalePrice)) +
+  geom_histogram(color = "#e49700", fill = "#fffbee") + 
+  labs(
+    title = "Histogram of SalesPrice in Housing Data",
+    x = "Sales Price in $USD",
+    y = "Count"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(color = "#e49700", size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 10, face = "bold"),
+    plot.caption = element_text(face = "italic")
+  )
+head(data)
+```
+
+### Visualization 2 : Home price against other numeric variables
+```{R correlation_plot}
+# Get only the numeric data
+numeric_only <- data %>% select_if(is.numeric)
+res <- cor(numeric_only)
+#res %>% pivot_longer(c(0,10), names_to = "var2")
+
+corrplot(
+  res, 
+  tl.cex = .5,
+  col = colorRampPalette(c("#ffb118","white", "#3c726d"))(100),
+  tl.col = "#3c726d"
+  )
+```
+
+### Visualization 3: Bar plots of categorical variables
+Code is hidden due to length of code, but the source code can be found in the Github repository
+```{R categorical-visualization, echo=F, warning=F}
+# Get only the categorical data
+categorical <- data %>% select_if(negate(is.numeric))
+categorical %>% glimpse()
+
+data$MSSubClass <- as.factor(data$MSSubClass)
+data$MSZoning <- as.factor(data$MSZoning)
+data$Street <- as.factor(data$Street)
+data$Alley <- as.factor(data$Alley)
+data$LotShape <-  as.factor(data$LotShape)
+data$LandContour <- as.factor(data$LandContour)
+data$Utilities <- as.factor(data$Utilities)
+data$LotConfig <-  as.factor(data$LotConfig)
+data$LandSlope <-  as.factor(data$LandSlope)
+data$Neighborhood <-  as.factor(data$Neighborhood)
+data$Condition1 <- as.factor(data$Condition1)
+data$Condition2 <- as.factor(data$Condition2)
+data$BldgType <- as.factor(data$BldgType)
+data$HouseStyle <- as.factor(data$HouseStyle)
+data$RoofStyle <- as.factor(data$RoofStyle)
+data$RoofMatl <- as.factor(data$RoofMatl)
+data$Exterior1st <- as.factor(data$Exterior1st)
+data$Exterior2nd <- as.factor(data$Exterior2nd)
+data$MasVnrType <- as.factor(data$MasVnrType)
+data$ExterQual <- as.factor(data$ExterQual)
+data$ExterCond <- as.factor(data$ExterCond)
+data$Foundation <- as.factor(data$Foundation)
+data$BsmtQual <- as.factor(data$BsmtQual)
+data$BsmtCond <- as.factor(data$BsmtCond)
+data$BsmtExposure <- as.factor(data$BsmtExposure)
+data$BsmtFinType1 <- as.factor(data$BsmtFinType1)
+data$BsmtFinType2 <- as.factor(data$BsmtFinType2)
+data$Heating <- as.factor(data$Heating)
+data$HeatingQC <- as.factor(data$HeatingQC)
+data$CentralAir <- as.factor(data$CentralAir)
+data$Electrical <- as.factor(data$Electrical)
+data$KitchenQual <- as.factor(data$KitchenQual)
+data$Functional <- as.factor(data$Functional)
+data$FireplaceQu <- as.factor(data$FireplaceQu)
+data$GarageType <- as.factor(data$GarageType)
+data$GarageFinish  <- as.factor(data$GarageFinish)
+data$GarageQual  <- as.factor(data$GarageQual)
+data$GarageCond  <- as.factor(data$GarageCond)
+data$PavedDrive <- as.factor(data$PavedDrive)
+data$PoolQC <- as.factor(data$PoolQC)
+data$Fence <- as.factor(data$Fence)
+data$MiscFeature <- as.factor(data$MiscFeature)
+data$SaleType <- as.factor(data$SaleType)
+data$SaleCondition <- as.factor(data$SaleCondition)
+
+factorial_variables <- c(2,3,6:17,22:26,28:34,36,40:43,54,56,58,59,61,64:66,73:75,79,80)
+str(data[,factorial_variables])
+
+library(dplyr)
+library(tidyr)
+data %>%
+  gather(Attributes, value, factorial_variables[1:9]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+data %>%
+  gather(Attributes, value, factorial_variables[10:18]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete() 
+data %>%
+  gather(Attributes, value, factorial_variables[28:36]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+
+data %>%
+  gather(Attributes, value, factorial_variables[37:44]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar Graphs") +
+  scale_fill_discrete() 
+
+data$MSSubClass <- as.factor(data$MSSubClass)
+data$MSZoning <- as.factor(data$MSZoning)
+data$Street <- as.factor(data$Street)
+data$Alley <- as.factor(data$Alley)
+data$LotShape <-  as.factor(data$LotShape)
+data$LandContour <- as.factor(data$LandContour)
+data$Utilities <- as.factor(data$Utilities)
+data$LotConfig <-  as.factor(data$LotConfig)
+data$LandSlope <-  as.factor(data$LandSlope)
+data$Neighborhood <-  as.factor(data$Neighborhood)
+data$Condition1 <- as.factor(data$Condition1)
+data$Condition2 <- as.factor(data$Condition2)
+data$BldgType <- as.factor(data$BldgType)
+data$HouseStyle <- as.factor(data$HouseStyle)
+data$RoofStyle <- as.factor(data$RoofStyle)
+data$RoofMatl <- as.factor(data$RoofMatl)
+data$Exterior1st <- as.factor(data$Exterior1st)
+data$Exterior2nd <- as.factor(data$Exterior2nd)
+data$MasVnrType <- as.factor(data$MasVnrType)
+data$ExterQual <- as.factor(data$ExterQual)
+data$ExterCond <- as.factor(data$ExterCond)
+data$Foundation <- as.factor(data$Foundation)
+data$BsmtQual <- as.factor(data$BsmtQual)
+data$BsmtCond <- as.factor(data$BsmtCond)
+data$BsmtExposure <- as.factor(data$BsmtExposure)
+data$BsmtFinType1 <- as.factor(data$BsmtFinType1)
+data$BsmtFinType2 <- as.factor(data$BsmtFinType2)
+data$Heating <- as.factor(data$Heating)
+data$HeatingQC <- as.factor(data$HeatingQC)
+data$CentralAir <- as.factor(data$CentralAir)
+data$Electrical <- as.factor(data$Electrical)
+data$KitchenQual <- as.factor(data$KitchenQual)
+data$Functional <- as.factor(data$Functional)
+data$FireplaceQu <- as.factor(data$FireplaceQu)
+data$GarageType <- as.factor(data$GarageType)
+data$GarageFinish  <- as.factor(data$GarageFinish)
+data$GarageQual  <- as.factor(data$GarageQual)
+data$GarageCond  <- as.factor(data$GarageCond)
+data$PavedDrive <- as.factor(data$PavedDrive)
+data$PoolQC <- as.factor(data$PoolQC)
+data$Fence <- as.factor(data$Fence)
+data$MiscFeature <- as.factor(data$MiscFeature)
+data$SaleType <- as.factor(data$SaleType)
+data$SaleCondition <- as.factor(data$SaleCondition)
+
+factorial_variables <- c(2,3,6:17,22:26,28:34,36,40:43,54,56,58,59,61,64:66,73:75,79,80)
+str(data[,factorial_variables])
+
+library(dplyr)
+library(tidyr)
+data %>%
+  gather(Attributes, value, factorial_variables[1:9]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+data %>%
+  gather(Attributes, value, factorial_variables[10:18]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete() 
+data %>%
+  gather(Attributes, value, factorial_variables[28:36]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar graphs") +
+  scale_fill_discrete()
+
+data %>%
+  gather(Attributes, value, factorial_variables[37:44]) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_bar(stat="count", show.legend = F) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Categorical Variables - Bar Graphs") +
+  scale_fill_discrete() 
+
+```
+
+##  Hypothesis 1 
+Houses with an overall quality rating greater than 5 have on average a higher sales price.
+```{R hypothesis-1}
+hyp1<-data %>%
+  mutate(quality = case_when(
+    (OverallQual<=5) ~ "lower quality",
+    (OverallQual>5) ~ "higher quality"
+    ))
+t.test(SalePrice ~ quality, data = hyp1,
+        var.equal = FALSE, alternative = "greater")
+hyp1%>% ggplot(aes(x=quality,y=SalePrice,fill=quality))+ geom_boxplot()+scale_fill_manual(values=c("#ffcb64","#74c1b9"))+xlab("Quality Level")+
+   ylab( "Sales Price ($)")+ ggtitle("Comparing Sales Price of Different Quality houses")
+```
+The one tailed t-test reveals that there is a significant difference between the means of higher quality houses(quality>5) and lower quality houses(Overall quality <=5). Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
+
+## Hypothesis 2
+There is a significant difference in sale price of houses that have a foundation made of poured concrete vs. houses that have a foundation made of cinder blocks.
+```{R hypothesis2}
+data1<-data %>%
+select(SalePrice, Foundation) %>%
+  filter(Foundation=='PConc'|Foundation=='CBlock')
+AOV<-aov(SalePrice~Foundation,data=data1)
+summary(AOV)
+summ<-data1%>% group_by(Foundation)%>% summarise(mean_price=mean(SalePrice))
+ggplot(summ,aes(x=Foundation,y=mean_price,fill=Foundation))+geom_col()+labs(y="Mean Sales Price ($)",x="Foundation Type")+ggtitle("Mean Sales Price of Houses Varying in Foundation")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
+```
+Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have foundations made of poured concrete and houses that have cinder blocks.
+
+## Hypothesis 3
+There is a significant difference in sale price of houses that have finished garages (3) vs those houses that have unfinished garages (1).
+```{R hypothesis3}
+data2<-data %>%
+select(SalePrice, GarageFinish) %>%
+  filter(GarageFinish=='1'|GarageFinish=='3')
+AOV1<-aov(SalePrice~GarageFinish,data=data2)
+summary(AOV1)
+summ<-data2%>% group_by(GarageFinish)%>% summarise(mean_price=mean(SalePrice))
+ggplot(summ,aes(x=GarageFinish,y=mean_price,fill=GarageFinish))+geom_col()+labs(y="Mean Sales Price ($)",x="Garage Finish")+ggtitle("Mean Sales Price of Houses Varying in Garage Finishing")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
+```
+Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have unfinished garages and houses that have finished garages.
+
+## Hypothesis 4
+Houses with a garage that can hold 3 or more cars have on average a higher sales price.
+```{R hypothesis4}
+hyp4<-data %>%
+  mutate(garage_capacity = case_when(
+    (GarageCars<3) ~ "less than 3 cars",
+    (GarageCars>=3) ~ "3 or more cars"
+    ))
+t.test(SalePrice ~ garage_capacity, data = hyp4,
+        var.equal = FALSE, alternative = "greater")
+hyp4%>% ggplot(aes(y=SalePrice,x=garage_capacity,fill=garage_capacity))+geom_boxplot()+ xlab("Car Capacity")+
+   ylab("Sales Price ($)")+ggtitle( "Comparing Sales price with Different Garage Capacity")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
+```
+
+The one tailed t-test reveals that there is a significant difference between the means of houses that have garages of 3 or more car capacity and houses that have garages with less than 3 car capacity. Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
+
+# Modeling - Predicting House Prices(Regression)
+
+All modeling was done in Python 3 due to Python 3 having an abundance of resources for modeling, such as the sci-kit learn library
+
+The task at hand is to predict the sales price ($USD) of houses in our dataset. To do this, we will use the cleaned data that we prepared above. We will use a variety of models and model hyperparameters to find out what works best. We set up the problem to use all of the independent variables in the sample. We created dummy variables (as evident of the data cleaning steps) for the categorical variables and created test sets for properly validating the performance of the model.
+
+The models we use are from scikit-learn and statsmodels
+
+
+
+
+## Model 1: Random Forest Regressor
+```{python RFRegressor}
+
+rf_mses = []
+rf_training_mses = []
+max_depths = []
+for d in range(1,30):
+    rf_regr = RandomForestRegressor(max_depth=d, random_state=0)
+    # Fit the data to the model
+    rf_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    rf_y_pred = rf_regr.predict(X_test)
+    rf_y_training_pred = rf_regr.predict(X_train)
+    # Report Mean Square Error
+    rf_mses.append(mean_squared_error(y_test, rf_y_pred))
+    rf_training_mses.append(mean_squared_error(y_train, rf_y_training_pred))
+    max_depths.append(d)
+    #print(f"Mean Squared Error: {rf_mses[-1]}")
+best_n = 9
+rf_mse = min(rf_mses)
+print(f"Best MSE of {rf_mse} at max_depth of {best_n}")
+
+
+plt.close()
+plt.plot(max_depths, rf_mses)
+plt.plot(max_depths, rf_training_mses)
+plt.title('MSE of different max_depth for Random Forest Regressor')
+plt.xlabel('Max Depth', size=20)
+plt.ylabel('Mean Square Error', size=20)
+plt.legend(['Testing Data MSE',"Training Data MSE"])
+plt.show()
+
+# Now that we know the best n, train again
+rf_regr = RandomForestRegressor(max_depth=best_n, random_state=0)
+# Fit the data to the model
+rf_regr.fit(X_train, y_train)
+# Make predictions on test data
+rf_y_pred = rf_regr.predict(X_test)
+
+```
+### Defining your Model Class
+
+Our model class is scikit-learn's random forest regressor. The model class works by building decision trees on different sub-samples of the data and uses averaging to improve the predictive accuracy. More information abou the model can be found <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank"> Here</a>
+
+### Defining the Cost Function
+
+The cost function used for our random forest regressor is mean squared error. We chose this because it only slightly penalizes the model for being slightly off, but greatly penalizes the model when it is off a greater amount.
+
+### Perform Optimization
+
+We optimized the performance of our model by trying different max-depths for the random forest model. This helped us avoid over fitting. We went with a model that would minimize the mean square error of the model
+
+### Check RF Performance
+
+The performance of the model is checked below:
+
+```{python RFRegressor-Eval}
+rf_mse = mean_squared_error(y_test, rf_y_pred)
+
+
+max_val = max(max(y_test),max(rf_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(rf_y_pred, y_test, '.y')
+plt.xlabel('Random Forest Regressor Predicted Sales Price ($)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
+plt.title(f'Random Forest Regressor Diagnosis Plot (max_depth={best_n})')
+
+plt.show()
+# Report Mean Square Error
+print(f"""Random Forest (max_depth={best_n}) MSE: {mean_squared_error(y_test, rf_y_pred):,.2f}
+Random Forest (max_depth={best_n}) MAE: {mean_absolute_error(y_test, rf_y_pred):,.2f}
+Random Forest (max_depth={best_n}) R^2: {rf_regr.score(X_test, y_test):.3f}""")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Model 2:  Linear Regression
+```{python LinearRegressor}
+# Train a linear model
+lin_regr = LinearRegression(fit_intercept=False)
+lin_regr.fit(X_train, y_train)
+# Make predictions on test data
+lin_y_pred = lin_regr.predict(X_test)
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+```
+```{python testing}
+
+
+
+X2 = sm.add_constant(X_train)
+est = sm.OLS(y_train, X2)
+lin_regr = est.fit()
+#print(lin_regr.summary())
+lin_y_pred = lin_regr.predict(X_test)
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+
+#print(lin_regr.rsquared)
+#results_as_html = lin_regr.summary().tables[1].as_html()
+#anova_results = pd.read_html(results_as_html, header=0, index_col=0)[0]
+#anova_results.columns
+#anova_results.sort_values(by=["t"],ascending=False).dropna(axis=0).head(10)
+```
+
+
+```{python Linear-Eval}
+max_val = max(max(y_test),max(lin_y_pred))
+plt.close()
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(lin_y_pred, y_test, '.r')
+plt.xlabel('Linear Model Predicted Sales Price ($)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
+plt.title('Linear Model Diagnosis Plot')
+plt.legend(['Perfect fit line',"Linear Model"])
+plt.show()
+
+
+print(f"""Multiple Linear Regression MSE: {mean_squared_error(y_test, lin_y_pred):,.2f}
+Multiple Linear Regression MAE: {mean_absolute_error(y_test, lin_y_pred):,.2f}
+Multiple Linear Regression R^2: {lin_regr.rsquared:.3f}""")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Model 3: KNN Regressor
+```{python KNNRegressor}
+
+knn_mses = []
+nums_neighbors = []
+for k in range(1,30):
+    knn_regr = KNeighborsRegressor(
+      n_neighbors=k,
+      weights="distance"
+    )
+    # Fit the data to the model
+    knn_regr.fit(X_train, y_train)
+    # Make predictions on test data
+    knn_y_pred = knn_regr.predict(X_test)
+    # Report Mean Square Error
+    knn_mses.append(mean_squared_error(y_test, knn_y_pred))
+    nums_neighbors.append(k)
+    #print(f"Mean Squared Error: {knn_mses[-1]}")
+best_k = nums_neighbors[knn_mses.index(min(knn_mses))]
+knn_mse = min(knn_mses)
+print(f"Best MSE of {knn_mse} at n_neighbors of {best_k}")
+
+plt.close()
+plt.plot(nums_neighbors, knn_mses, c="red")
+plt.title('MSE of different n_neighbors for KNN')
+plt.xlabel('Number of Neighbors', size=20)
+plt.ylabel('Mean Square Error', size=20)
+
+plt.rcParams["figure.autolayout"] = True
+plt.show()
+
+
+
+# Now that we know the best n, train again
+knn_regr = KNeighborsRegressor(
+  n_neighbors=best_k,
+  weights="distance"
+  )
+# Fit the data to the model
+knn_regr.fit(X_train, y_train)
+# Make predictions on test data
+knn_y_pred = knn_regr.predict(X_test)
+
+
+```
+### Defining your Model Class
+
+Our model class is scikit-learn's K-nearest neighbors regressor. The model class works by basically memorizing a list of points for comparing future points to - these future points are compared to the k nearest neighbors and take the weighted average of their values (weights are determined by distance). More information abou the model can be found <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank"> Here</a>
+
+### Defining the Cost Function
+
+KNN does not exactly have a cost function - instead, the KNN model basically just memorizes the locations of the training dataset and compares future prediction points to the points the model was trained on. The model then chooses the weighted average of the k-closest points
+
+### Perform Optimization
+
+We optimized the performance of our model by trying different numbers of neighbors (k) for the KNN model. This helped us determine which K values would be best for our model.
+
+### Check KNN Performance
+
+The performance of the model is checked below:
+
+```{python KNN-eval}
+plt.close()
+max_val = max(max(y_test),max(knn_y_pred))
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(knn_y_pred, y_test, '.b')
+plt.xlabel('KNN Model Predicted Sales Price ($)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
+plt.title(f'KNN Regressor Diagnosis Plot (neighbors={best_k})')
+plt.legend(['Perfect fit line',"KNN Model"])
+plt.show()
+
+# Report Mean Square Error
+print(f"""KNN (k={best_k}) MSE: {mean_squared_error(y_test, knn_y_pred):,.2f}
+KNN (k={best_k}) MAE: {mean_absolute_error(y_test, knn_y_pred):,.2f}
+KNN (k={best_k}) R^2: {knn_regr.score(X_test, y_test):.3f}""")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Model 4: Neural Network Regressor
+```{python neural-network}
+
+vals = []
+combos = []
+mlp_regr = MLPRegressor(random_state=1,
+  max_iter=500, 
+  hidden_layer_sizes=(100,30,8),
+  learning_rate="constant", # {‘constant’, ‘invscaling’, ‘adaptive’}
+  alpha=10**-6, # default =0.0001
+  solver="adam",
+  batch_size=200
+  ).fit(X_train, y_train)
+MLP_y_pred = mlp_regr.predict(X_test)
+print(mlp_regr.score(X_test, y_test))
+MLP_mae = mean_absolute_error(y_test, MLP_y_pred)
+```
+### Defining your Model Class
+
+Our model class is scikit-learn's MLP. The model works by creating and training a neural network in epochs. We trained parameters More information about the model can be found <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html" target="_blank"> Here</a>
+
+### Defining the Cost Function
+
+The cost function in the neural network minimizes the squared error using the "adam" stochastic gradient-based optimizer
+
+### Perform Optimization
+
+We tried to optimize the performance of the neural network by trying different hyperparameters for the model and keeping the new hyperparameters if the squared error improved.
+
+### Check Neural Net Performance
+
+The performance of the model is checked below:
+
+```{python NeuralNetwork-eval}
+plt.close()
+max_val = max(max(y_test),max(MLP_y_pred))
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(MLP_y_pred, y_test, '.g')
+plt.xlabel('Neural Network Model Predicted Sales Price ($)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
+plt.title('Neural Network Model Diagnosis Plot')
+plt.legend(['Perfect fit line',"Neural Network Model"])
+plt.show()
+
+# Report Mean Square Error
+print(f"""Neural Network MSE: {mean_squared_error(y_test, MLP_y_pred):,.2f}
+Neural Network MAE: {mean_absolute_error(y_test, MLP_y_pred):,.2f}
+Neural Network R^2: {mlp_regr.score(X_test, y_test):.3f}""")
+```
+
+
+# Discussion
+
+To quantitatively measure the performance of the models, we will use the following measures:
+- MAE (Mean Absolute Error)
+- MSE (Mean Square Error)
+- R^2 score
+
+The MAE is a good measure of performance of the model because of its interpretability. The MAE for our model is just the mean absolute value of the predictions. In other words, it is how far off our prediction is, on average.
+
+The MSE is a good measure of the performance of the model due to its superiority for training the models. By training and optimizing for MSE, models are trained to give extra weights to outliers and higher residuals for predictions.
+
+R^2 is a good measure of the performance because it is a normalized measure on a scale of 0-1 for measuring our model. It allows others who aren't familiar with the problem domain to easily understand the predictive power of the model.
+
+To visually measure the performance of the models, we can plot them on a diagnosis plot and see how close they are to a perfect fit.
+## Measuring Performance
+```{python performance-eval}
+
+lin_mse = mean_squared_error(y_test, lin_y_pred)
+knn_mse = mean_squared_error(y_test, knn_y_pred)
+rf_mse = mean_squared_error(y_test, rf_y_pred)
+MLP_mse = mean_squared_error(y_test, MLP_y_pred)
+
+lin_mae = mean_absolute_error(y_test, lin_y_pred)
+knn_mae = mean_absolute_error(y_test, knn_y_pred)
+rf_mae = mean_absolute_error(y_test, rf_y_pred)
+MLP_mae = mean_absolute_error(y_test, MLP_y_pred)
+
+max_val = max(
+  max(y_test),
+  max(MLP_y_pred),
+  max(rf_y_pred), 
+  max(knn_y_pred)
+)
+plt.close()
+plt.xlim([0, max_val])
+plt.xlim([0, max_val])
+
+plt.plot([0.0, max_val], [0.0, max_val], 'k')
+plt.plot(lin_y_pred, y_test, '.r',alpha=0.3)
+plt.plot(knn_y_pred, y_test, '.b',alpha=0.3)
+plt.plot(rf_y_pred, y_test, '.y',alpha=0.3)
+plt.plot(MLP_y_pred, y_test, '.g',alpha=0.3)
+# apply legend()
+plt.xlabel('Model Predicted Sales Price ($)', size=20)
+plt.ylabel('True Sales Price ($)', size=20)
+plt.title('Model Diagnosis Plot (all models)')
+
+plt.legend(['Perfect fit line',"Linear Model",f"KNN Model k={best_k}",f"RF Model md={best_n}", "Neural Network Model"])
+plt.show()
+print(f"""
+MSEs (Mean Square Errors)-----------------
+Linear Reg:          {lin_mse:,.2f}
+KNN Reg:             {knn_mse:,.2f}
+Random Forest Reg:   {rf_mse:,.2f}
+Neural Network Reg:  {MLP_mse:,.2f}
+MAEs (Mean Absolute Errors)---------------
+Linear Reg:         ${lin_mae:,.2f}
+KNN Reg:            ${knn_mae:,.2f}
+Random Forest Reg:  ${rf_mae:,.2f}
+Neural Network Reg: ${MLP_mae:,.2f}
+R^2 Scores--------------------------------
+Linear Reg:          {lin_regr.rsquared:.3f}
+KNN Reg:             {knn_regr.score(X_test, y_test):.3f}
+Random Forest Reg:   {rf_regr.score(X_test, y_test):.3f}
+Neural Network Reg:  {mlp_regr.score(X_test, y_test):.3f}""")
+```
+
+
+## Findings and Interpretations
+Based on the R^2 and MSE values of the models when test data is applied to them, the neural network performed best when evaluating using MSE or MAE, whereas the linear regression had the best R^2 value.
+
+In addition to the predictive power of the model as a whole, we can look at the output summary tables from the linear regression to get a good idea of the variables that have the greatest statistical significance for predicting the sales price of a home.
+
+```{python variable-contribution}
+results_as_html = lin_regr.summary().tables[1].as_html()
+anova_results = pd.read_html(results_as_html, header=0, index_col=0)[0]
+anova_results.columns
+anova_results.sort_values(by=["t"],ascending=False).dropna(axis=0).head(10)
+```
+Before rushing to conclusions about the coefficients of the linear model coefficients, keep in mind that they are coefficients for z-score-standardized independent variables. As you can see, the following variables appeared to be tthe most statistically significant for predicting the sales price of a home in the linear model:
+
+1. GrLivArea - above ground living area square feet
+
+1. Utilities - type of utilities available
+
+1. OverallQual - Rates the overall material and finish of the house
+
+1. LotArea - lot size in square feet
+
+## Potential Limitations
+
+Some potential limitations of our modeling:
+
+- Findings cannot being generalized to all houses- our sample is only in Ames, Iowa; because of this, the findings can only be generalized to this area.
+
+- Variable types may have been misclassified as numeric (or categorical) in data preparation stage, leading to lower predictive power
+
+- Original rows with N/A values may have been able to be filled with other values such as 0 or a potential default value for better predictive power
+
+- Other hyperparameters could have been tuned using GridSearchCV or other hyperparameter tuning methods, especially the neural network
+
+- The dataset lacked many higher sales price homes. This lead to potential errors or bias when training our models. This is evident in the higher prediction variance as actual price of the home increases.
+
+# Conclusion
+
+## Main Findings
+
+Hypothesis Main Findings:
+
+- Houses that have a higher quality rating have a higher sales price.
+
+- Additionally, houses that have foundation made of poured concrete are priced significantly higher than houses with foundations that are made of cinder blocks. 
+
+- Houses with garages without a finish are priced significantly lower than garages with a garage finish
+
+- Houses that have a garage capacity of 3 or more car spots have a higher sales price on average than garages with less than 3 car spots.
+
+Predictive Model Findings:
+
+- Models generally underperformed in houses with a higher sales price, likely due to a lack of high sales price data prevalence in the dataset
+
+- The coefficients in the Linear model that appeared to have the most statistically significant impact on the variance in the model were:
+
+  - GrLivArea - Above grade (ground) living area square feet
+  
+  - Utilities - Type of utilities available
+  
+  - OverallQual - Rates the overall material and finish of the house
+  
+  - LotArea -  Lot size in square feet
+  
+  - Neighborhood_StoneBr - Located in StoneBr Neighborhood
+  
+  - Street_Pave - Paved road access to property
+  
+- To increase accuracy of the model, one could perform hyperparameter tuning, figure out alternatives for null data, 
+
+
+## Next Steps
+
+- Find a better way to deal with nulls other than deleting them from the dataset. Perhaps there are default values that the nulls could be instead
+
+- Explore greater hyperparameter testing and optimization using GridSearchCV, or using a library such as Tensorflow/Keras for more highly-customizing the hyperparameters.
+
+- Measure housing data in a more objective way. For example, the quality measurement was a subjective way to measure a house which could be inconsistent across different samples in the population.
+
+- Create new features and find interactions between variables that may affect the sales price
+
+# Acknowledgements
+
+Here are the values that represent contribution to the project:
+Derek Dreibrodt: 100%
+Areesa Mahesania: 100%
+Abdulateef Oyegbefun: 100%
+José W. Ruiz: 75%
+
+# Bibliography (References)
+
+
+- https://www.kaggle.com/datasets/ec57d28ec32f6ba54301bf711172b190796cacc25e46296e997ed0ba23d455cf?resource=download
+
+- https://www.investopedia.com/articles/mortgages-real-estate/08/home-ownership.asp#:~:text=Buying%20a%20home%20is%20one,tends%20to%20rise%20in%20value.
+
+- http://rstudio-pubs-static.s3.amazonaws.com/361579_f4d2e64cbf1e466781e43b20cf6d9a44.html
+
+- https://scikit-learn.org/stable/supervised_learning.html
+
+- https://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.OLSResults.html
+

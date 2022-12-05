@@ -251,9 +251,6 @@ data %>%
 
 ```
 
-## TODO: ANOVA 
-Create some sort of analysis of variance
-
 # Hypotheses
 
 Now we have visualized our data, we can make some hypotheses
@@ -268,10 +265,10 @@ hyp1<-data %>%
     ))
 t.test(SalePrice ~ quality, data = hyp1,
         var.equal = FALSE, alternative = "greater")
-boxplot(SalePrice ~ quality, data = hyp1, xlab = "Quality Level",
-   ylab = "Sales Price ($)", main = "Comparing Sales price of different Quality houses")
+hyp1%>% ggplot(aes(x=quality,y=SalePrice,fill=quality))+ geom_boxplot()+scale_fill_manual(values=c("#ffcb64","#74c1b9"))+xlab("Quality Level")+
+   ylab( "Sales Price ($)")+ ggtitle("Comparing Sales Price of Different Quality houses")
 ```
-The one tailed t-test reveals that the there is a significant difference between the means of higher quality houses(quality>5) and lower quality houses(Overall quality <=5). Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
+The one tailed t-test reveals that there is a significant difference between the means of higher quality houses(quality>5) and lower quality houses(Overall quality <=5). Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
 
 ## Hypothesis 2
 There is a significant difference in sale price of houses that have a foundation made of poured concrete vs. houses that have a foundation made of cinder blocks.
@@ -281,10 +278,8 @@ select(SalePrice, Foundation) %>%
   filter(Foundation=='PConc'|Foundation=='CBlock')
 AOV<-aov(SalePrice~Foundation,data=data1)
 summary(AOV)
-
 summ<-data1%>% group_by(Foundation)%>% summarise(mean_price=mean(SalePrice))
-ggplot(summ,aes(x=Foundation,y=mean_price))+geom_col()+labs(y="Mean Sales Price ($)",x="Foundation Type")+ggtitle("Mean Sales Price of Houses Varying in Foundation")
-
+ggplot(summ,aes(x=Foundation,y=mean_price,fill=Foundation))+geom_col()+labs(y="Mean Sales Price ($)",x="Foundation Type")+ggtitle("Mean Sales Price of Houses Varying in Foundation")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
 ```
 Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have foundations made of poured concrete and houses that have cinder blocks.
 
@@ -296,10 +291,8 @@ select(SalePrice, GarageFinish) %>%
   filter(GarageFinish=='1'|GarageFinish=='3')
 AOV1<-aov(SalePrice~GarageFinish,data=data2)
 summary(AOV1)
-
 summ<-data2%>% group_by(GarageFinish)%>% summarise(mean_price=mean(SalePrice))
-ggplot(summ,aes(x=GarageFinish,y=mean_price))+geom_col()+labs(y="Mean Sales Price ($)",x="Garage Finish")+ggtitle("Mean Sales Price of Houses Varying in Garage")
-
+ggplot(summ,aes(x=GarageFinish,y=mean_price,fill=GarageFinish))+geom_col()+labs(y="Mean Sales Price ($)",x="Garage Finish")+ggtitle("Mean Sales Price of Houses Varying in Garage Finishing")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
 ```
 Based on the ANOVA test, we can conclude that there is a significant difference in sales price between houses that have unfinished garages and houses that have finished garages.
 
@@ -307,16 +300,16 @@ Based on the ANOVA test, we can conclude that there is a significant difference 
 Houses with a garage that can hold 3 or more cars have on average a higher sales price.
 ```{R hypothesis4}
 hyp4<-data %>%
-  mutate(garagecarsn = case_when(
+  mutate(garage_capacity = case_when(
     (GarageCars<3) ~ "less than 3 cars",
     (GarageCars>=3) ~ "3 or more cars"
     ))
-t.test(SalePrice ~ garagecarsn, data = hyp4,
+t.test(SalePrice ~ garage_capacity, data = hyp4,
         var.equal = FALSE, alternative = "greater")
-boxplot(SalePrice ~ garagecarsn, data = hyp4, xlab = "Car Capacity",
-   ylab = "Sales Price ($)", main = "Comparing Sales price with Different Garage capacity")
+hyp4%>% ggplot(aes(y=SalePrice,x=garage_capacity,fill=garage_capacity))+geom_boxplot()+ xlab("Car Capacity")+
+   ylab("Sales Price ($)")+ggtitle( "Comparing Sales price with Different Garage Capacity")+scale_fill_manual(values=c("#ffcb64","#74c1b9"))
 ```
 
-The one tailed t-test reveals that the there is a significant difference between the means of houses that have garages of 3 or more car capacity and houses that have garages with less than 3 car capacity. Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
+The one tailed t-test reveals that there is a significant difference between the means of houses that have garages of 3 or more car capacity and houses that have garages with less than 3 car capacity. Since the p-value is less than 0.05, we can reject the null hypothesis and accept the alternative that higher quality houses have a higher sales price.
 
 
